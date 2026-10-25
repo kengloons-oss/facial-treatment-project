@@ -16,7 +16,7 @@ After installing software, close and reopen PowerShell so it refreshes `PATH`.
 ## 2. Download the source
 
 ```powershell
-git clone https://github.com/mengfoong-dev/facial-treatment-project.git
+git clone https://github.com/kengloons-oss/facial-treatment-project.git
 cd .\facial-treatment-project
 ```
 
