@@ -1,0 +1,107 @@
+﻿@using X.PagedList.Mvc.Core
+@{
+    Layout = "_StaffLayout";
+    ViewBag.Title = "ReferralReward | List";
+
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Referral Reward", "/ReferralReward/ReferralRewardList"),
+        new KeyValuePair<string, string>("List", null)
+    };
+}
+
+<form data-ajax="true"
+      data-ajax-update="#target"
+      data-ajax-loading="#loader"
+      id="f">
+
+    <div class="container-filter">
+        <div class="half">
+            <div class="card card-blue-shadow">
+                <div class="card-txtfield card-body">
+                    
+
+                    <label for="filter_referralRange">Referral (Pax) Range: </label>
+                    @Html.DropDownList(
+                             "referralRange",
+                             Helpers.referral_range_list,
+                             new { @class = "form-input", id = "filter_referralRange" }
+                             )
+
+                    <label for="filter_creditRange">Credit Range: </label>
+                    @Html.DropDownList(
+                             "creditRange",
+                             Helpers.credit_range_list,
+                             new { @class = "form-input", id = "filter_creditRange" }
+                             )
+
+                    <label for="filter_pageitems">Items Per Page: </label>
+                    @Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if(Helpers.isManager()){
+        <div class="card-button-right">
+            <button data-get="/ReferralReward/Create" id="b_create">Create New Referral Reward</button>
+        </div>
+    }
+    
+</form>
+
+<div id="target">
+    <partial name="Staff/_RefferalRewardList" />
+</div>
+
+@section foot {
+    <script>
+        let timer = null;
+
+        $('#name').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 100);
+        });
+
+        $(' #filter_pageitems').on('change', e => {
+            $(e.target.form).submit();
+        });
+
+        $('#filter_referralRange, #filter_creditRange').on('change', function () {
+            $(this.form).submit();
+        });
+
+        $(document).on('click', '.activate-btn', function (e) {
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: "Activate Reward",
+                text: 'The Deactivated reward can not be activate again?',
+                icon: 'warning',
+                showCancelButton: true
+                //confirmButtonText: "Yes"
+            });
+        });
+
+        $(document).on('click', '.deactivate-btn', function (e) {
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: "Deactivate Reward",
+                text: 'Do you confirm to deactivate this Reward?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: "Yes"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const url = '/ReferralReward/Deactivate/' + id;
+                    $('<form>').appendTo(document.body).attr({ method: 'post', action: url }).submit();
+                }
+            });
+        });
+    </script>
+}

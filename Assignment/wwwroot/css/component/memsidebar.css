@@ -1,0 +1,136 @@
+﻿/* Member Sidebar */
+.uk-offcanvas-bar {
+    background-color: #ffffff;
+    color: #333;
+    padding: 2.5%;
+    width: 20%;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.2s ease;
+}
+/*.uk-nav > li a{
+    color: grey;
+}*/
+.mem-profile {
+    position: relative;
+    display: inline-block;
+}
+
+    .mem-profile img {
+        width: 100px;
+        height: 100px;
+        border-radius: 10px;
+        transition: transform 0.3s ease-out;
+    }
+
+    .mem-profile:hover img {
+        transform: scale(1.05);
+    }
+
+    .mem-profile:hover::before {
+        content: '';
+        position: absolute;
+        border-radius: 10px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.1);
+        z-index: 1;
+        transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.2s ease;
+    }
+
+.mem-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0.15rem 0rem 0.15rem 0rem;
+}
+
+.mem-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.1rem;
+}
+
+.mem-subtitle2 {
+    color: #9a99e8;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.divider {
+    margin-bottom: 1.2rem;
+}
+ul.uk-nav a {
+    color: #807FE2;
+    transition: color 0.15s ease-in-out;
+}
+ul.uk-nav a:hover {
+    color: #9a99e8;
+    transition: color 0.15s ease-in-out;
+}
+
+.uk-nav-parent-icon svg {
+    color: #8d8ce5;
+    display: inline !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.uk-nav li > a {
+    font-size: .7rem;
+    padding: 0.2rem;
+    margin-bottom: 0.4rem;
+    transition: padding 0.2s ease-in-out, color 0.2s ease;
+}
+.uk-nav-sub li > a {
+    padding: 0.25rem;
+}
+
+/* Logout Btn */
+.uk-offcanvas-bar .logout-btn {
+    position: absolute;
+    bottom: 3.5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    background-color: #e08282;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease-out; 
+}
+    .uk-offcanvas-bar .logout-btn:hover {
+        background-color: #d95555;
+    }
+/* Member Sidebar - Responsive Design */
+@media (max-width: 1200px) {
+    .uk-offcanvas-bar {
+        padding: 5%;
+        width: 35%;
+        transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.2s ease;
+    }
+        .uk-offcanvas-bar .logout-btn {
+            position: absolute;
+            bottom: 4.5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            background-color: #e08282;
+            color: white;
+            border: none;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease-out; 
+        }
+}

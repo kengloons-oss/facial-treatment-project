@@ -1,0 +1,140 @@
+﻿@{
+    Layout = "_LoginLayout";
+    ViewBag.Title = "Verify Email";
+}
+
+<section id="formHolder">
+    <div class="brand">
+        <a href="../member/home.php" class="logo">
+            <img src="/images/logo.png" height="64px" width="64px" alt="logo" style="border-radius: 100%; padding: .5em;">
+        </a>
+        <div class="heading">
+            <h2>OwO Meow Art Gallery</h2>
+            <p>Your Right Choice</p>
+        </div>
+    </div>
+
+    <!-- Form Box -->
+    <div class="form">
+        <!-- OTP Form -->
+        <div class="login form-peice">
+            <form id="otpForm" action="/Login/VerifyEmail" method="post">
+                <div class="form-group">
+                    <label for="otp">Enter OTP code:</label>
+                    <div id="otp-container">
+                        <input type="text" id="otp1" maxlength="1" class="otp-input">
+                        <input type="text" id="otp2" maxlength="1" class="otp-input">
+                        <input type="text" id="otp3" maxlength="1" class="otp-input">
+                        <input type="text" id="otp4" maxlength="1" class="otp-input">
+                        <input type="text" id="otp5" maxlength="1" class="otp-input">
+                        <input type="text" id="otp6" maxlength="1" class="otp-input">
+                    </div>
+                    <!-- Hidden field to store the combined OTP -->
+                    <input type="hidden" id="Otp" name="Otp">
+                </div>
+            </form>
+
+        </div><!-- End OTP Form -->
+    </div>
+</section>
+
+<!-- CSS Styling -->
+<style>
+    #otp-container {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .otp-input {
+        width: 2.5rem;
+        height: 3rem;
+        font-size: 1.5rem;
+        text-align: center;
+        margin-right: 0.5rem;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        background-color: #f7f7f7;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+
+        .otp-input:focus {
+            border-color: #007BFF;
+            outline: none;
+            background-color: #fff;
+        }
+
+        .otp-input:last-child {
+            margin-right: 0;
+        }
+
+</style>
+
+<!-- JavaScript for OTP handling -->
+<script>
+    var baseURL = '<?= getBaseURL() ?>';
+
+    $(document).ready(function() {
+        $('.otp-input').on('input', function() {
+            var currentInput = $(this);
+            var currentValue = currentInput.val();
+            var nextInput = currentInput.next('.otp-input');
+            var previousInput = currentInput.prev('.otp-input');
+
+            // Ensure only digits are allowed
+            if (currentValue.match(/[^0-9]/)) {
+                currentInput.val(''); // Clear invalid characters
+            }
+
+            // Move to next input if digit is entered
+            if (currentValue.length === 1 && nextInput.length) {
+                nextInput.focus();
+            }
+
+            // Move to the previous input on backspace
+            currentInput.on('keydown', function(e) {
+                if (e.key === 'Backspace' && currentInput.val() === '') {
+                    previousInput.focus();
+                }
+            });
+
+            // Check if all OTP inputs are filled
+            if (isOtpComplete()) {
+                submitOtpForm();
+            }
+        });
+
+        // Function to check if all OTP fields are filled
+        function isOtpComplete() {
+            var otpComplete = true;
+            $('.otp-input').each(function() {
+                if ($(this).val().length === 0) {
+                    otpComplete = false;
+                }
+            });
+            return otpComplete;
+        }
+
+        // Function to collect OTP and submit the form
+        function submitOtpForm() {
+            // Collect OTP from the fields
+            var otp = '';
+            $('.otp-input').each(function() {
+                otp += $(this).val();
+            });
+
+            // Validate OTP (6 digits required)
+            var otpPattern = /^[0-9]{6}$/;
+            if (otpPattern.test(otp)) {
+                // Set the combined OTP value into a hidden input field
+                $('#Otp').val(otp);
+
+                // Submit the form
+                $('#otpForm').submit();
+            } else {
+                showAlert('OTP Invalid!', 'Please enter a valid 6-digit OTP.', 'error', false);
+            }
+        }
+    });
+</script>

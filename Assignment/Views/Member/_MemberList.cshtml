@@ -1,0 +1,124 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Member>
+
+@{
+	string[] fields = ["ID", "Name", "Gender", "Member Level", "Pending Appointment(s)", "Registration Date"];
+	bool isManager = Helpers.isManager();
+
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+	@Model.Count() of @Model.TotalItemCount record(s) &nbsp;&nbsp;| &nbsp;
+	Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+	<thead>
+		<tr>
+			@foreach (var f in fields)
+			{
+				string dir = "asc";
+				string sort = "";
+				string sort_icon = "asc";
+
+				if (f == ViewBag.Sort)
+				{
+					dir = ViewBag.Dir == "desc" ? "asc" : "desc";
+					sort = ViewBag.Dir;
+					sort_icon = dir == "asc" ? "fa-sort-up" : "fa-sort-down";
+				}
+
+				<th class="table_headers">
+					<a data-ajax="true"
+					   data-ajax-update="#target"
+					   data-ajax-loading="#loader"
+					   href="?name=@ViewBag.Name&sort=@f&dir=@dir&page_items=@ViewBag.Page_items&page=@Model.PageNumber" class="@sort">@f<i class='fas @sort_icon'></i></a>
+				</th>
+			}
+
+			<th class="table_headers">Action</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		@foreach (var s in Model)
+		{
+			<tr>
+				<td>@s.Code</td>
+				<td>@s.Person.Name</td>
+				<td>@Helpers.FormatGender(s.Person.Gender)</td>
+				<td>@s.Level</td>
+				<td>
+					@{
+						var pendingCount = ViewBag.pending_apt_dict.ContainsKey(s.Id) ? ViewBag.pending_apt_dict[s.Id] : 0;
+						<text>@pendingCount</text>
+					}
+				</td>
+				<td>@Helpers.FormatDate(s.Person.Registration_date)</td>
+				<td>
+					@{
+						<!-- Edit Button -->
+						<button class="uk-button uk-button-default uk-button-small pastel-edit-btn" data-get="/Member/Detail/@s.Id" uk-tooltip="View / Edit This Details">
+							<span uk-icon="pencil" class="uk-icon"></span> <span class="button-text">@(isManager ? "Edit" : "Detail")</span>
+						</button>
+
+						if (isManager)
+						{
+							if (s.Person.Status == 1)
+							{
+								<!-- Deactivate Button -->
+								<button class="uk-button uk-button-danger uk-button-small pastel-deactivate-btn equal-width-btn deactivate-btn" data-id="@s.Id" uk-tooltip="Deactivate This">
+									<span uk-icon="ban" class="uk-icon"></span> <span class="button-text">Deactivate</span>
+								</button>
+							}
+							else
+							{
+								<!-- Reactivate Button -->
+								<button class="uk-button uk-button-primary uk-button-small pastel-reactivate-btn equal-width-btn activate-btn" data-id="@s.Id" uk-tooltip="Reactivate This Back">
+									<span uk-icon="history" class="uk-icon"></span> <span class="button-text">Reactivate</span>
+								</button>
+							}
+						}
+					}
+				</td>
+			</tr>
+		}
+
+		@if (Model.Count <= 0)
+		{
+			<tr>
+				<td colspan="7">No available member record ~</td>
+			</tr>
+		}
+	</tbody>
+
+
+</table>
+
+<nav class="admin-pager">
+	@{
+		var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+		options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+		options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+		options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+		options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+		var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "target",
+				LoadingElementId = "#loader",
+			};
+	}
+
+	@Html.PagedListPager(
+		Model,
+			p => $"?name={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page_items={@ViewBag.Page_items}&page={p}",
+		PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+	)
+</nav>

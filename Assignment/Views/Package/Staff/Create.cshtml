@@ -1,0 +1,815 @@
+﻿@model PackageVM
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Package | Create";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Package", "/Package/List"),
+		new KeyValuePair<string, string>("Create Package", null)
+	};
+
+	var serviceSelectListJson = Json.Serialize(ViewBag.Service_select_list);
+	var services = Json.Serialize(ViewBag.Services);
+	var cover_image_path = "";
+	var normal_image_path = new List<string>();
+
+	if (Model.Cover_image != null)
+	{
+		cover_image_path = "/images/package/temp/" + Model.Cover_image.FileName;
+	}
+
+	if (Model.Normal_image != null)
+	{
+		foreach (var img in Model.Normal_image)
+		{
+			normal_image_path.Add("/images/package/temp/" + img.FileName);
+		}
+	}
+}
+
+
+<form method="post" class="create-package-form" enctype="multipart/form-data" action="/Package/Staff/CreatePackage1">
+	<div class="container card " style="padding-bottom: 25px; margin: 0.8rem 0rem 4rem 0rem;">
+
+		<div class="card-header">
+			<div class="card-title h5">
+				<!-- Back Button -->
+				<button data-get="/Package/Staff/ExitFromCreation" class="topleft-back" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+				<!-- Page Title -->
+				Create New Package
+			</div>
+		</div>
+
+		<!-- Step Bar -->
+		<div class="container admin-stepbar">
+			<div class="column col-12">
+				<ul class="step">
+					<li class="step-item active">
+						<a class="tooltip create-progress" data-tooltip="Step 1">
+							Upload Images & Input Package Details
+						</a>
+					</li>
+					<li class="step-item stepitem2">
+						<a class="tooltip create-progress" data-tooltip="Step 2">Arrange Service Sequence Between Treatments</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="columns">
+			<!-- left-side -->
+			<div class="formformat column col-6 col-sm-12" style="padding-bottom: 10px;">
+				<div asp-validation-summary="ModelOnly"></div>
+				<div class="card-body my-pagecard-body">
+
+					@* multiple photo upload *@
+
+					@* Upload cover image *@
+					<div class="columns col-gapless">
+						<div class="column col-5">
+							<div class="form-group">
+								<label class="upload">
+									<img src="@(!string.IsNullOrEmpty(cover_image_path) ? cover_image_path : "/images/package/defaultImage.png")" class="up-cover-img">
+									<label asp-for="Cover_image" class="form-label" style="display:none;"></label>
+
+									<div class="upload-inputbox-left">
+										<label for="file-upload" class="file-upload-label">
+											<i class="fa-solid fa-cloud-arrow-up"></i> Attach cover image by dropping it here, or <span class="select-text">selecting one</span>.
+										</label>
+										<input asp-for="Cover_image" id="cover-file-upload" type="file" accept="image/jpeg,image/png,image/jpg" class="file-input">
+									</div>
+								</label>
+
+								<span asp-validation-for="Cover_image" class="form-input-hint error-message"></span>
+							</div>
+						</div>
+
+						<div class="column col-7 uploadpart">
+							@* Upload normal images *@
+							<div class="form-group">
+								<label class="upload-normal">
+									@* images preview *@
+									<div class="upload-normal-prev">
+
+										<div class=" normal-img-container">
+											<div class="slider-container">
+												<div class="slider-wrapper">
+											@if (normal_image_path.Count() > 0)
+											{
+												foreach (var img_path in normal_image_path)
+												{
+													<div class="slider-item">
+														<img src="@img_path" class="slider-image">
+														<button class="remove-btn"><span>click to remove this image</span></button>
+													</div>
+												}
+											}
+											else
+											{
+												<div class="slider-item">
+													<img src="/images/package/defaultImage.png" alt="Image 1" class="slider-image">
+													<button class="remove-btn"><span class="imgPreview">image preview 1</span></button>
+												</div>
+												<div class="slider-item">
+													<img src="/images/package/defaultImage.png" alt="Image 2" class="slider-image">
+													<button class="remove-btn"><span class="imgPreview">image preview 2</span></button>
+												</div>
+												<div class="slider-item">
+													<img src="/images/package/defaultImage.png" alt="Image 3" class="slider-image">
+													<button class="remove-btn"><span class="imgPreview">image preview 3</span></button>
+												</div>
+												<div class="slider-item">
+													<img src="/images/package/defaultImage.png" alt="Image 4" class="slider-image">
+													<button class="remove-btn"><span class="imgPreview">image preview 4</span></button>
+												</div>
+												<div class="slider-item">
+													<img src="/images/package/defaultImage.png" alt="Image 5" class="slider-image">
+													<button class="remove-btn"><span class="imgPreview">image preview 5</span></button>
+												</div>
+											}
+												</div>
+												<button class="up-prev-btn" type="button"><i class="fa-solid fa-chevron-left"></i></button>
+												<button class="up-next-btn" type="button"><i class="fa-solid fa-chevron-right"></i></button>
+												<!-- Display selected image count -->
+												<div class="image-count">Image(s) Selected:&nbsp;<span id="image-count">0</span></div>
+											</div>
+										</div>
+
+									</div>
+
+									<label asp-for="Normal_image" class="form-label" style="display:none;"></label>
+
+									<div class="upload-inputbox-right">
+										<label for="file-upload" class="file-upload-label">
+											<i class="fa-solid fa-cloud-arrow-up"></i> Attach normal images by dropping it here, or <span class="select-text">selecting multiple</span>.
+										</label>
+										<input asp-for="Normal_image" id="normal-file-upload" type="file" accept="image/jpeg,image/png,image/jpg" class="file-input" multiple>
+									</div>
+
+								</label><!-- end upload-normal -->
+								<span asp-validation-for="Normal_image" class="form-input-hint error-message"></span>
+							</div>
+						</div>
+
+					</div>
+
+				</div><!-- end card-body -->
+			</div><!-- end left-side -->
+
+			<!-- right-side -->
+			<div class="formformat-right column col-6 col-sm-12 " style="padding-bottom:8px;">
+				
+				<div style="padding-bottom:0.8rem;">
+					@* package id *@
+					<label>Package ID:</label>
+					@Helpers.FormatId("PK", ViewBag.New_id)
+				</div>
+
+				@* package basic input *@
+				<div class="form-group">
+					@* package name *@
+					<label asp-for="Name">Package Name:</label>
+					<input asp-for="Name" type="text" class="form-input" data-trim />
+					<span asp-validation-for="Name" class="form-input-hint error-message"></span>
+				</div>
+				<div class="form-group">
+					@* package description *@
+					<label asp-for="Description">Package Description:</label>
+					<textarea asp-for="Description" type="text" class="form-input" data-trim></textarea>
+					<span asp-validation-for="Description" class="form-input-hint error-message"></span>
+				</div>
+
+				<div class="uk-grid-small" uk-grid style="padding-top:0.2rem; padding-bottom:0.8rem;">
+					<div class="uk-width-1-3">
+						<div class="form-group">
+							@* package price *@
+							<label asp-for="Price">Package Price (RM):</label>
+							<input asp-for="Price" type="number" step="0.01" class="form-input" data-trim />
+							<span asp-validation-for="Price" class="form-input-hint error-message"></span>
+						</div>
+					</div>
+					<div class="uk-width-1-3">
+						<div class="form-group">
+							@* package validity *@
+							<label asp-for="Validity">Package Validity (Months): <b id="validity-range"></b></label>
+							@* <input asp-for="Validity" type="month" class="form-input" min="@ViewBag.MinDate" max="@ViewBag.MaxDate" /> *@
+							<input asp-for="Validity" type="number" min="1" max="36" step="1" class="form-input" data-trim />
+							<span asp-validation-for="Validity" class="form-input-hint error-message"></span>
+						</div>
+					</div>
+					<div class="uk-width-1-3">
+						<div class="form-group">
+							@* number of package treatment *@
+							<label asp-for="Treatment">Number of Package Treatment:</label>
+							<input asp-for="Treatment" type="number" step="1" min="1" max="30" class="form-input" data-trim />
+							<span asp-validation-for="Treatment" class="form-input-hint error-message"></span>
+						</div>
+					</div>
+				</div>
+				
+				@* treatment service default sequence *@
+				<div class="form-group">
+					<label>Treatment Service Default Sequence: </label>
+					<select id="treatment-service-select" class="select2" asp-items="ViewBag.Service_select_list" multiple="multiple">
+					</select>
+					<input type="hidden" asp-for="ServiceIds" data-trim />
+					<span asp-validation-for="ServiceIds" class="form-input-hint error-message"></span>
+
+					<div>Total number of service selected: <small id="total-selected-services">0</small></div>
+					<div>Total Duration (hrs): <small id="total-services-duration">0</small></div>
+				</div>
+
+				<!-- Buttons (Reset+Next) -->
+				<div class="text-right" style="padding-top:16px;">
+					<button type="reset" class="btn btn-secondary">Reset</button>
+					<button id="nextBtn" type="button" class="btn btn-primary">Next</button>
+				</div>
+			</div><!-- end right-side -->
+
+		</div><!-- end columns -->
+	</div><!-- end container card -->
+</form>
+
+
+@section foot {
+	<script>
+		var services = @Html.Raw(services);
+		var max_treatment_duration = 0;
+		var total_services = 0;
+		var total_services_duration = 0;
+		var selected_services = [];
+		var normal_images = [];
+
+		$(document).ready(function() {
+			var session_price = @Model.Price;
+			var session_validity = @Model.Validity;
+			var session_treatment = @Model.Treatment;
+			var session_selected_services = "@Model.ServiceIds" == "" ? "" : ("@Model.ServiceIds").split(',').map(Number);
+			var session_normal_images = @Html.Raw(Json.Serialize(normal_image_path));
+
+			if (session_price == 0) {
+				$('input[name="Price"]').val('');
+			}
+
+			if (session_validity == 0) {
+				$('input[name="Validity"]').val('');
+			}
+
+			if (session_treatment == 0) {
+				$('input[name="Treatment"]').val('');
+			}
+
+			if (session_selected_services != null && session_selected_services.length > 0) {
+				selected_services = session_selected_services;
+				reorderSelectOptions(session_selected_services);
+				$('#treatment-service-select').val(selected_services).trigger('change');
+
+				total_services = selected_services.length;
+
+				selected_services.forEach(service => {
+					// Find the service that matches the current service id
+					var selectedService = services.find(filter_service => filter_service.id === service);
+
+					if (selectedService) {
+						total_services_duration += selectedService.duration;
+					}
+				});
+
+				updateSummary();
+			}
+
+			if (session_normal_images.length > 0) {
+				$('#normal-image-btn').text('Reupload images');
+			} else {
+				$('#normal-image-btn').text('Upload images');
+			}
+
+			if (session_treatment == 0) {
+				$('#treatment-service-select').prop('disabled', true);
+			} else {
+				$('#treatment-service-select').prop('disabled', false);
+			}
+
+			// $('#treatment-service-select').select2({
+			// 	placeholder: "Search for a service",
+			// 	allowClear: true
+			// });
+		});
+
+		// NORMAL IMAGES SLIDER
+		let itemCount = 0;
+		let currentIndex = 0;
+		let selectedCount = 0; // Track the number of selected images
+
+		$(document).ready(function () {
+		  const $sliderWrapper = $(".slider-wrapper");
+		  const $imageCount = $("#image-count");
+
+		  // Initialize the slider items and selected count
+		  updateSliderItems();
+
+		  // Update the image count initially
+		  console.log("Initial selected count:", selectedCount);
+		  updateImageCount();
+
+		  // Use MutationObserver to monitor DOM changes
+		  const observer = new MutationObserver(() => {
+			updateSliderItems();
+			updateImageCount();
+		  });
+
+		  observer.observe($sliderWrapper[0], { childList: true, subtree: true });
+
+		  function updateSliderItems() {
+			const $sliderItems = $(".slider-item");
+			itemCount = $sliderItems.length;
+
+			// Calculate the selected count based on non-default images
+			selectedCount = $sliderItems.filter(function () {
+			  return $(this).find("img").attr("src") !== "/images/package/defaultImage.png";
+			}).length;
+
+			// Ensure currentIndex is within bounds
+			if (currentIndex >= itemCount) {
+			  currentIndex = itemCount - 1;
+			}
+		  }
+
+		  function updateImageCount() {
+			// Log the selected count for debugging
+			console.log("Selected images count:", selectedCount);
+
+			// Update the displayed image count
+			$imageCount.text(selectedCount);
+		  }
+
+		  function goToSlide(index) {
+			if (itemCount === 0) {
+			  console.error("No items to slide.");
+			  return;
+			}
+
+			currentIndex = (index + itemCount) % itemCount; // Wrap around if index is out of bounds
+			console.log("Going to slide:", currentIndex);
+			$sliderWrapper.css("transform", `translateX(-${currentIndex * 100}%)`);
+		  }
+
+		  $(".up-next-btn").click(function () {
+			console.log("Next button clicked");
+			goToSlide(currentIndex + 1);
+		  });
+
+		  $(".up-prev-btn").click(function () {
+			console.log("Previous button clicked");
+			goToSlide(currentIndex - 1);
+		  });
+		});
+
+
+		function updateSummary() {
+			$('#total-selected-services').text(total_services);
+			$('#total-services-duration').text(total_services_duration);
+		}
+
+		function createFileFromPath(path) {
+			return {
+				name: path.split('/').pop(), // Extract the file name from the path
+				type: 'image/jpeg', // Assuming image is jpeg (you can modify this based on the file type)
+				size: 0, // We don't have the size, so set it to 0
+				lastModified: new Date().getTime(), // Set current timestamp for lastModified
+				arrayBuffer: function() {
+					// Dummy implementation of arrayBuffer
+					return Promise.resolve(new ArrayBuffer(0));
+				},
+				slice: function() {
+					// Dummy slice method
+					return this;
+				},
+				// This function mimics the `File` object’s `getFile` method for preview purposes
+				stream: function() {
+					return new ReadableStream();
+				}
+			};
+		}
+
+		$('#normal-image-btn').on('click', function(e) {
+			e.preventDefault();
+
+			$('input[name="Normal_image"]').click();
+		});
+
+		// handle normal images upload
+		$('.upload-normal input[name="Normal_image"]').on('change', function(e) {
+			const f = e.target.files;
+			const previewContainer = $('.slider-wrapper');
+
+			// Prevent adding more than 5 images
+			if (normal_images.length + f.length > 5) {
+				Swal.fire({
+					title: "Maximum number of normal images reached",
+					text: `You can only upload a maximum of 5 images. Currently, ${normal_images.length} uploaded.`,
+					icon: 'error',
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "OK"
+				});
+				e.target.value = '';
+				return;
+			}
+
+			previewContainer.empty();
+
+			if (f.length > 0) {
+				$('#normal-image-btn').text('Upload images');
+
+				Array.from(f).forEach((file, index) => {
+					if (file.type.startsWith('image/')) {
+						normal_images.push(file);
+						console.log(normal_images);
+					} else {
+						e.target.value = '';
+					}
+				});
+
+				$('.slider-navigation').empty();
+
+				var lastIndex = normal_images.length - 1;
+				itemCount = normal_images.length;
+
+				normal_images.forEach((image, index) => {
+					const imgContainer = document.createElement('div');
+					imgContainer.className = "slider-item";
+					
+					const img = document.createElement('img');
+					img.className = "slider-image";
+					img.src = URL.createObjectURL(image);
+					img.onload = () => URL.revokeObjectURL(img.src);
+
+					const i_tag = document.createElement('span');
+					i_tag.textContent = 'click to remove this image';
+
+					const removeBtn = document.createElement('button');
+					removeBtn.className = "remove-btn";
+					removeBtn.setAttribute('data-index', index);
+
+					removeBtn.appendChild(i_tag);
+					imgContainer.appendChild(img);
+					imgContainer.appendChild(removeBtn);
+					previewContainer.append(imgContainer);
+
+					const slider_navigation_dot = document.createElement('div');
+
+					if (index == 0) {
+						slider_navigation_dot.className = 'dot active';
+					} else {
+						slider_navigation_dot.className = 'dot';
+					}
+
+					slider_navigation_dot.setAttribute('data-index', index);
+					$('.slider-navigation').append(slider_navigation_dot);
+				});
+			}
+
+			// Trigger input validation
+			$(e.target).valid();
+
+			// update file input
+			updateNormalImagesInput();
+		});
+
+		function updateNormalImagesInput() {
+			const dataTransfer = new DataTransfer();
+
+			normal_images.forEach((image) => {
+				dataTransfer.items.add(image);
+			});
+
+			console.log(dataTransfer);
+
+			$('.upload-normal input[name="Normal_image"]')[0].files = dataTransfer.files;
+		}
+
+		function updateFileInput() {
+			const fileInput = $('#normal-file-upload');
+			const dataTransfer = new DataTransfer();
+
+			// Add the updated images (normal_images) back to the input field
+			normal_images.forEach((image) => {
+				dataTransfer.items.add(image);
+			});
+
+			// Update the input's files property
+			fileInput[0].files = dataTransfer.files;
+			console.log(fileInput[0].files);
+		}
+
+		// remove normal image button
+		$(document).on('click', '.remove-btn', function(e) {
+			e.preventDefault();
+			console.log("trigger remove");
+			
+			const image_index = $(this).data('index');
+			const imgContainer = $(this).closest('.slider-item');
+
+			if (image_index == undefined) {
+				return;
+			}
+			console.log("remove image at index:", image_index);
+
+			// remove imgContainer
+			imgContainer.remove();
+			$('.slider-navigation').empty();
+
+			// rearrange data-index of remove btn
+			$('.slider-item').each((index, element) => {
+				$(element).find('.remove-btn')
+					.data('index', index)
+					.attr('data-index', index)
+
+				const slider_navigation_dot = document.createElement('div');
+
+				if (index == (image_index - 1) % (normal_images.length - 2)) {
+					slider_navigation_dot.className = 'dot active';
+				} else {
+					slider_navigation_dot.className = 'dot';
+				}
+
+				slider_navigation_dot.setAttribute('data-index', index);
+				$('.slider-navigation').append(slider_navigation_dot);
+			});
+
+			// remove the image from the normal_images array
+			normal_images.splice(image_index, 1);
+			console.log("updated cover images: ", normal_images);
+			updateFileInput();
+
+			itemCount = normal_images.length;
+				console.log(currentIndex);
+				console.log(image_index);
+			if (currentIndex == image_index) {
+				currentIndex--;
+				$('.slider-wrapper').css('transform', `translateX(-${currentIndex * 100}%)`);
+			}
+
+			// check whether the image preview container is empty (show default image)
+			if (normal_images.length == 0) {
+				const previewContainer = $('.slider-wrapper');
+
+				previewContainer.append(`<div class="slider-item">
+											<img src="/images/package/defaultImage.png" alt="Image 1" class="slider-image">
+											<button class="remove-btn"><span class="imgPreview">image preview 1</span></button>
+										</div>
+										<div class="slider-item">
+											<img src="/images/package/defaultImage.png" alt="Image 2" class="slider-image">
+											<button class="remove-btn"><span class="imgPreview">image preview 2</span></button>
+										</div>
+										<div class="slider-item">
+											<img src="/images/package/defaultImage.png" alt="Image 3" class="slider-image">
+											<button class="remove-btn"><span class="imgPreview">image preview 3</span></button>
+										</div>
+										<div class="slider-item">
+											<img src="/images/package/defaultImage.png" alt="Image 4" class="slider-image">
+											<button class="remove-btn"><span class="imgPreview">image preview 4</span></button>
+										</div>
+										<div class="slider-item">
+											<img src="/images/package/defaultImage.png" alt="Image 5" class="slider-image">
+											<button class="remove-btn"><span class="imgPreview">image preview 5</span></button>
+										</div>
+				`);
+			}
+		});
+
+		// package service default sequence
+		$('#treatment-service-select').on('select2:select', function(e) {
+			const selectedOption = e.params.data;
+			console.log("selectedOption", selectedOption);
+
+			// check if the total duration is exceeded
+			var selected_service = services.filter(service => service.id == selectedOption.id)[0];
+			if (total_services_duration + selected_service.duration > 6) {
+				Swal.fire({
+					title: "Maximum treatment duration reached",
+					text: "The maximum duration of each treatment cannot more than 6 hours.",
+					icon: 'error',
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "OK"
+				});
+
+				// Remove the invalid selection
+				const currentValues = $('#treatment-service-select').val();
+				const updatedValues = currentValues.filter(value => value !== selectedOption.id);
+				$('#treatment-service-select').val(updatedValues).trigger('change');
+				return;
+			}
+
+			selected_services.push(selectedOption.id);
+			console.log(selected_services);
+
+			// calculate total number of service selected
+			total_services++;
+
+			// calculate total services duration
+			total_services_duration += selected_service.duration;
+
+			// update ServiceIds Input
+			$('input[name="ServiceIds"]').val(selected_services.join(','));
+			reorderSelectOptions(selected_services);
+
+			// validation
+			if (selected_services.length == 0) {
+				$('#treatment-service-select').siblings('span.error-message').text('Please select at least one service.');
+			} else {
+				$('#treatment-service-select').siblings('span.error-message').text('');
+			}
+
+			updateSummary();
+		});
+
+		$('#treatment-service-select').on('select2:unselect', function(e) {
+			const removedOption = e.params.data;
+
+			// update the select services list
+			selected_services = selected_services.filter(function(id) {
+				return id != removedOption.id;
+			});
+			console.log(selected_services);
+
+			// calculate total number of service selected
+			total_services--;
+
+			// calculate total services duration
+			var selected_service = services.filter(service => service.id == removedOption.id)[0];
+			total_services_duration -= selected_service.duration;
+
+			// update ServiceIds Input
+			$('input[name="ServiceIds"]').val(selected_services.join(','));
+
+			updateSummary();
+		});
+
+		// Function to reorder the select2 options based on user selection order
+		function reorderSelectOptions(services) {
+			const selectElement = $('#treatment-service-select');
+
+			// Reorder the options based on the order in userSelectedOptions
+			services.forEach((id, index) => {
+				const option = selectElement.find(`option[value="${id}"]`);
+
+				// Move the selected option to the front of the select dropdown
+				option.detach();  // Remove the option
+				selectElement.append(option);  // Add it back at the end
+			});
+
+			// Refresh select2 to reflect the changes
+			selectElement.trigger('change');
+		}
+
+		// remove treatment service
+		$(document).on('click', '.remove-service', function (e) {
+			e.preventDefault();
+
+			// Get the closest service-item's data-id
+			var service_id = $(this).closest('.service-item').data('id');
+			var service_name = $(this).closest('.service-item').find('div').clone().children().remove().end().text().trim();
+
+			// Optionally, remove the service item
+			$(this).closest('.service-item').remove();
+			selected_services = selected_services.filter(function(id) {
+				return id !== service_id.toString();
+			});
+
+			// Add the removed service back to the select dropdown
+			var option = $('<option>')
+				.attr('value', service_id)
+				.text(service_name);
+			$('#treatment-service-select').append(option);
+
+			// Update the sequence for remaining items
+			var service_items = $('.service-container .service-item');
+			service_items.each(function(index) {
+				$(this).find('div').first().html(`<b>${index + 1}. </b>${$(this).find('div').first().text().split('. ')[1]}`);
+			});
+
+			// calculate total number of service selected
+			total_services--;
+
+			// calculate total services duration
+			var selected_service = services.filter(service => service.id == service_id)[0];
+			console.log(selected_service);
+			total_services_duration -= selected_service.duration;
+
+			// update ServiceIds Input
+			$('input[name="ServiceIds"]').val(selected_services.join(','));
+
+			updateSummary();
+		});
+
+		// package validity input
+		$(document).on('change', 'input[name="Validity"]', function(e) {
+			const validity = e.target.value;
+
+			if (validity > 36) {
+				e.target.value = 36;
+				$(e.target).val(36);
+
+				Swal.fire({
+					title: "Maximum validity month reached",
+					text: "The maximum validity cannot more than 36 months.",
+					icon: 'error',
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "OK"
+				});
+			} else if (validity < 1) {
+				e.target.value = 1;
+				$(e.target).val(1);
+
+				Swal.fire({
+					title: "Minimum validity month reached",
+					text: "The minimum validity cannot less than 1 month.",
+					icon: 'error',
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "OK"
+				});
+			}
+		});
+
+		// package treatment number input
+		$(document).on('change', 'input[name="Treatment"]', function(e) {
+			var treatment_num = e.target.value;
+
+			// check whether treatment number more than 30
+			if (treatment_num > 30) {
+				e.target.value = 30;
+				$(e.target).val(30);
+
+				Swal.fire({
+					title: "Maximum treatment number reached",
+					text: "The maximum treatment number cannot more than 30.",
+					icon: 'error',
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "OK"
+				});
+			} else if (treatment_num < 1) {
+				e.target.value = 1;
+				$(e.target).val(1);
+
+				Swal.fire({
+					title: "Minimum treatment number reached",
+					text: "The minimum treatment number cannot less than 1.",
+					icon: 'error',
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "OK"
+				});
+			} else {
+				$('#treatment-service-select').prop('disabled', false);
+			}
+
+			max_treatment_duration = treatment_num * 4;
+		});
+
+		// next button
+		$('#nextBtn').on('click', function(e) {
+			e.preventDefault();
+
+			if (selected_services.length == 0) {
+				$('#treatment-service-select').siblings('span.error-message').text('Please select at least one service.');
+			} else {
+				Swal.fire({
+					title: "Alert",
+					text: "Before proceeding to the next page"
+							+ ", please ensure your image upload is complete. "
+							+ "Any unsaved changes to the image upload field will not be retained. "
+							+ "Do you want to continue?",
+					icon: 'warning',
+					showDenyButton: true,
+					showCancelButton: false,
+					confirmButtonText: "Yes, Proceed"
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$(e.target.form).submit();
+					}
+				});
+			}
+		})
+
+		// Step Bar
+		$('.create-progress').on('click', function(e) {
+			var step = $(this).data('tooltip');
+
+			if (step == "Step 1") {
+				window.location.href = '/Package/Staff/Create';
+			} else if (step == "Step 2") {
+				$('.create-package-form').submit();
+			}
+		});
+
+	</script>
+}

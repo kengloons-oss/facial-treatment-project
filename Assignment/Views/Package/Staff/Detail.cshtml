@@ -1,0 +1,202 @@
+﻿@model Package
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Package | " + Model.Code;
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Package", "/Package/Staff/List"),
+		new KeyValuePair<string, string>("Detail", null)
+	};
+
+	// get cover image
+	var cover_image = Model.PackagePhotos
+								.Where(pp => pp.Type == 1)
+								.Select(pp => pp.Path)
+								.FirstOrDefault();
+
+	var normal_images = Model.PackagePhotos
+								.Where(pp => pp.Type == 2)
+								.Select(pp => pp.Path)
+								.ToList();
+}
+
+<div class="container card my-pagecard"><!-- container card (got border line) -->
+	<div class="columns">
+
+		<!-- left-side -->
+		<div class="formformat column col-6 col-sm-12">
+			<div class="card-header">
+				<div class="card-title h5">
+					<!-- Back Button -->
+					<button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+					<!-- Page Title -->
+					Package @Model.Code
+				</div>
+			</div>
+
+			<div class="card-body my-pagecard-body">
+				@* image section (left)*@
+				<div>
+					@* cover images *@
+					<b>Cover Image: </b>
+					<div class="cover-image-container">
+						<img src="/images/package/cover/@cover_image" class="cover-image" />
+					</div>
+
+					@* normal images *@
+					<b>Normal Images: </b>
+					<div class="normal-images-container">
+						@foreach (var img in normal_images)
+						{
+							<img src="/images/package/normal/@img" class="normal-image" />
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- right-side -->
+		<div class="formformat-right column col-6 col-sm-12 ">
+			<!-- Name -->
+			<div class="form-group">
+				<label asp-for="Name" class="form-label">Name:</label>
+				<div class="fake-input">@Model.Name</div>
+			</div>
+
+			<!-- Description -->
+			<div class="form-group">
+				<label asp-for="Description" class="form-label">Description:</label>
+				<div class="fake-input">@Model.Description</div>
+			</div>
+
+			<!-- Validity -->
+			<div class="form-group">
+				<label asp-for="Validity" class="form-label">Validity (month(s)):</label>
+				<div class="fake-input">@Model.Validity</div>
+			</div>
+
+			<!-- Treatment -->
+			<div class="form-group">
+				<label asp-for="Treatment" class="form-label">Total Treatment:</label>
+				<div class="fake-input">@Model.Treatment</div>
+			</div>
+
+			<!-- Status -->
+			<div class="form-group">
+				<label asp-for="Status" class="form-label">Status:</label>
+				<div class="fake-input">@Helpers.FormatStatus(Model.Status)</div>
+			</div>
+
+			@* bottom section *@
+			<div>
+				@* package treatment services *@
+				<div>
+					@foreach (var treatment in Model.PackageTreatments)
+					{
+						<div>
+							<b>Treatment @treatment.Treatment</b>
+							<small>Total Duration: @treatment.Duration hour(s)</small>
+
+							<button class="treatment-expand">Expand</button>
+
+							<div class="treatment-service-container">
+								@foreach (var ts in treatment.PackageTreatmentServices.OrderBy(t => t.Priority))
+								{
+									<div>
+										<label class="service-name" data-id="@ts.Service.Id">@ts.Service.Name</label>
+										<br />
+										<small>Service duration: @ts.Service.Duration hour(s)</small>
+										<button class="service-expand">Expand</button>
+										<div class="service-desc">
+											@ts.Service.Description
+										</div>
+									</div>
+								}
+							</div>
+
+						</div>
+					}
+				</div>
+			</div>
+
+		</div> <!-- end right-side -->
+	</div>
+</div>
+
+
+
+<style>
+	/* General styles for all images */
+	img {
+		max-width: 100%;
+		height: auto;
+		display: block; /* Prevent inline spacing issues */
+	}
+
+	/* Specific styles for cover images */
+	.cover-image {
+		width: 100%; /* Full width of the container */
+		max-height: 300px; /* Limit height if needed */
+		object-fit: cover; /* Ensures the image scales well without distortion */
+	}
+
+	/* Specific styles for normal images */
+	.normal-images-container {
+		display: flex;
+		flex-wrap: wrap; /* Ensures images wrap to the next row if they don't fit */
+		gap: 10px; /* Adds space between images */
+	}
+
+	.normal-image {
+		width: calc(33.33% - 10px); /* Makes each image one-third the width of the container, accounting for gaps */
+		max-width: 300px; /* Limits maximum size */
+		height: auto; /* Maintains aspect ratio */
+		object-fit: cover; /* Ensures good scaling without distortion */
+	}
+
+</style>
+
+@section foot {
+	<script>
+		$(document).ready(function() {
+			$('.service-desc').hide();
+			$('.treatment-service-container').hide();
+		});
+
+		// handle expand and collapse service description
+		$(document).on('click', '.service-expand', function(e) {
+			$(this).text('Collapse').removeClass('service-expand').addClass('service-collapse');
+
+			$(this).siblings('.service-desc').show();
+		});
+		
+		$(document).on('click', '.service-collapse', function(e) {
+			$(this).text('Expand').removeClass('service-collapse').addClass('service-expand');
+
+			$(this).siblings('.service-desc').hide();
+		});
+
+		// handle expand and collapse treatment details
+		$(document).on('click', '.treatment-expand', function(e) {
+			$(this).text('Collapse').removeClass('treatment-expand').addClass('treatment-collapse');
+
+			$(this).siblings('.treatment-service-container').show();
+		});
+
+		$(document).on('click', '.treatment-collapse', function(e) {
+			$(this).text('Expand').removeClass('treatment-collapse').addClass('treatment-expand');
+
+			$(this).siblings('.treatment-service-container').hide();
+		});
+
+		// handle clicking on service label
+		$(document).on('click', '.service-name', function(e) {
+			var service_id = $(this).data('id');
+
+			window.location.href = "/service/" + service_id;
+		});
+	</script>
+}

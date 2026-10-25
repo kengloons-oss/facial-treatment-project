@@ -1,0 +1,115 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Commission History";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Dashboard", "/User/Dashboard"),
+		new KeyValuePair<string, string>("Commission History", null)
+	};
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+					<!-- Commission Date Range Filter -->
+					<label for="filter_start_date">Commission Date: </label>
+					<div class="uk-flex uk-flex-between uk-flex-middle uk-width-1-1">
+						<div class="uk-width-expand">
+							@Html.TextBox("start_date", null, new
+								{
+									type = "date",
+									id = "filter_start_date",
+									@class= "uk-width-1-1",
+									placeholder = "Start date for filter date range",
+									@uk_tooltip = "title: Start date for filter date range; pos: top-left;"
+								})
+						</div>
+						<div class="uk-margin-small-left uk-margin-small-right uk-flex uk-flex-middle">
+							-
+						</div>
+						<div class="uk-width-expand">
+							@Html.TextBox("end_date", null, new
+								{
+									type = "date",
+									id = "filter_end_date",
+									@class= "uk-width-1-1",
+									placeholder = "End date for filter date range",
+									@uk_tooltip = "title: End date for filter date range; pos: top-left;"
+								})
+						</div>
+					</div>
+					<!-- Item Per Page -->
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+				</div>
+			</div>
+
+		</div>
+	</div>
+</form>
+
+<div id="target">
+	<partial name="Staff/_CommissionHistory" />
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		// search-as-you-type feature
+		$('#search').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 200);
+		});
+
+		$('#filter_start_date, #filter_end_date').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+		$(document).ready(function() {
+			// When the start_date is selected
+			$('#filter_start_date').on('change', function() {
+				var startDate = $(this).val();
+
+				// If start_date is selected, set min of end_date to start_date
+				if (startDate) {
+					$('#filter_end_date').attr('min', startDate);
+				} else {
+					// If start_date is not selected, remove the min attribute
+					$('#filter_end_date').removeAttr('min');
+				}
+			});
+
+			// Optionally, when the end_date is changed, ensure it does not go below start_date
+			$('#filter_end_date').on('change', function() {
+				var startDate = $('#filter_start_date').val();
+				var endDate = $(this).val();
+
+				 // If end_date is earlier than start_date, reset it
+				if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+					alert('End date cannot be earlier than the start date.');
+					$(this).val('');  // Clear the end date field
+				} else {
+					// If end_date is selected, set max of start_date to end_date
+					if (endDate) {
+						$('#filter_start_date').attr('max', endDate);
+					} else {
+						// If end_date is not selected, remove the max attribute from start_date
+						$('#filter_start_date').removeAttr('max');
+					}
+				}
+			});
+		});
+
+
+
+	</script>
+}

@@ -1,0 +1,212 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Package>
+
+@{
+	string[] fields = ["ID", "Package Name", "Number of Treatment", "Price (RM)", "Validity (months)", "Status"];
+	string json_categories = System.Text.Json.JsonSerializer.Serialize<int[]>(ViewBag.Selected_categories);
+	bool isManager = Helpers.isManager();
+
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+	@Model.Count() of @Model.TotalItemCount record(s) &nbsp;&nbsp;| &nbsp;
+	Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+	<thead>
+		<tr>
+			@foreach (var f in fields)
+			{
+				string dir = "asc";
+				string sort = "";
+				string sort_icon = "asc";
+
+				if (f == ViewBag.Sort)
+				{
+					dir = ViewBag.Dir == "desc" ? "asc" : "desc";
+					sort = ViewBag.Dir;
+					sort_icon = dir == "asc" ? "fa-sort-up" : "fa-sort-down";
+				}
+
+				<th class="table_headers">
+					<a data-ajax="true"
+					   data-ajax-update="#target"
+					   data-ajax-loading="#loader"
+					   href="?package_name=@ViewBag.Package_name&service_categories=@json_categories&treatment_num=@ViewBag.Treatment_num&package_price=@ViewBag.Package_price&sort=@f&dir=@dir&page_items=@ViewBag.Page_items&page=@Model.PageNumber" class="@sort">
+					   @f<i class='fas @sort_icon'></i>
+				   </a>
+				</th>
+			}
+			<th class="table_headers">Action</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		@{
+			if (Model.Count() == 0)
+			{
+				<tr>
+					<td colspan="7">No available package record ~</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var p in Model)
+				{
+					<tr>
+						<td>@p.Code</td>
+						<td>@p.Name</td>
+						<td>@p.PackageTreatments.Count()</td>
+						<td>@p.Price</td>
+						<td>@p.Validity</td>
+						<td>@Helpers.FormatStatus(p.Status)</td>
+						<td>
+							<!-- Edit Button -->
+							<button class="uk-button uk-button-default uk-button-small pastel-edit-btn" data-get="/Package/Staff/Detail/@p.Id" uk-tooltip="View This Details">
+								<span uk-icon="pencil" class="uk-icon"></span> <span class="button-text">Detail</span>
+							</button>
+
+							@{
+								if(isManager){
+									if (p.Status == 1)
+									{
+										<!-- Deactivate Button -->
+										<button class="uk-button uk-button-danger uk-button-small pastel-deactivate-btn equal-width-btn deactivate-btn" data-id="@p.Id" uk-tooltip="Deactivate This">
+											<span uk-icon="ban" class="uk-icon"></span> <span class="button-text">Deactivate</span>
+										</button>
+									}
+									else
+									{
+										<!-- Reactivate Button -->
+										<button class="uk-button uk-button-primary uk-button-small pastel-reactivate-btn equal-width-btn activate-btn" data-id="@p.Id" uk-tooltip="Reactivate This Back">
+											<span uk-icon="history" class="uk-icon"></span> <span class="button-text">Reactivate</span>
+										</button>
+									}
+								}
+							}
+							
+						</td>
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
+
+<nav class="admin-pager">
+	@{
+		var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+		options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+		options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+		options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+		options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+		var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "target",
+				LoadingElementId = "#loader",
+			};
+	}
+
+	@Html.PagedListPager(
+		Model,
+		p => $"?package_name={@ViewBag.Package_name}&service_categories={@json_categories}&treatment_num={@ViewBag.Treatment_num}&package_price={@ViewBag.Package_price}&sort={ViewBag.Sort}&dir={@ViewBag.Dir}&page_items={@ViewBag.Page_items}&page={p}",
+		PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+	)
+
+</nav>
+
+
+<script>
+	$(document).ready(function() {
+		// deactivate package
+		$('.deactivate-btn').on('click', function(e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Deactivate Package",
+				text: 'Are you confirm to deactivate this package ' + 'PK' + id.toString().padStart(4, '0') + '?',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = '/Package/Staff/Deactivate/' + id;  // Construct the URL dynamically using the ID
+					const f = $('<form>').appendTo(document.body)[0];
+					f.method = 'post';
+					f.action = url;
+					f.submit();
+				}
+			});
+		});
+
+		// activate package
+		$('.activate-btn').on('click', function(e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Activate Package",
+				text: 'Are you confirm to activate this package ' + 'PK' + id.toString().padStart(4, '0') + '?',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						url: '/Package/Staff/Activate/' + id,
+						type: 'POST',
+						success: function(response) {
+							if (response[0] == "success") {
+								Swal.fire({
+									title: response[1],
+									text: response[2],
+									icon: 'success',   @* You can use 'success', 'error', 'warning', 'info', or 'question' *@
+									showDenyButton: false,
+									showCancelButton: false,
+									confirmButtonText: "OK"
+								}).then((result) => {
+									$('#f').submit();
+								});
+							} else if (response[0] == "error") {
+								Swal.fire({
+									title: response[1],
+									text: response[2],
+									icon: 'error',   @* You can use 'success', 'error', 'warning', 'info', or 'question' *@
+									showDenyButton: false,
+									showCancelButton: false,
+									confirmButtonText: "OK"
+								});
+							} else if (response[0] == "error_navigate") {
+								Swal.fire({
+									title: response[1],
+									text: response[2],
+									icon: 'error',   @* You can use 'success', 'error', 'warning', 'info', or 'question' *@
+									showDenyButton: false,
+									showCancelButton: true,
+									confirmButtonText: "Go to Service List"
+								}).then((result) => {
+									if (result.isConfirmed) {
+										window.location.href = '/Service/List';
+									}
+								});
+							}
+						}
+					})
+				}
+			});
+		});
+	});
+</script>

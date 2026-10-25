@@ -1,0 +1,97 @@
+﻿@{
+	Layout = "_MemberLayout";
+	ViewBag.Title = "Order | List";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Order", "/Order/Member/List"),
+		new KeyValuePair<string, string>("List", null)
+	};
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+					<!-- Payment method filter -->
+					<label for="filter_payment_method">Payment Method: </label>
+					<select id="payment-method" name="payment_method" asp-items="@Helpers.payment_methods" class="form-input"></select>
+
+					<!-- Service category filter -->
+					<label for="filter_service_category">Service Category: </label>
+					<select id="filter_service_category" name="select_service_categories" asp-items="@ViewBag.Service_cat_selectlist" class="select2" multiple="multiple"></select>
+					<input type="hidden" name="service_categories" />
+
+					<!-- Amount filter -->
+					<label for="filter_min_amount">Amount Range (RM): </label>
+					<div class="uk-flex uk-flex-between uk-flex-middle uk-width-1-1">
+						<div class="uk-width-expand">
+							<input id="filter_min_amount" name="min_amt" type="number" min="0.01" max="999999.99" step="0.01" class="uk-width-1-1" placeholder="Minimum Amount" uk_tooltip="title: Minimum amount for filtering order amount range; pos: top-left;" />
+						</div>
+						<div class="uk-margin-small-left uk-margin-small-right uk-flex uk-flex-middle">
+							-
+						</div>
+						<div class="uk-width-expand">
+							<input id="filter_max_amount" name="max_amt" type="number" min="0.01" max="999999.99" step="0.01" class="uk-width-1-1" placeholder="Maximum Amount" uk_tooltip="title: Maximum amount for filtering order amount range; pos: top-left;" />
+						</div>
+						<span class="form-input-hint error-message" id="amount-err"></span>
+					</div>
+
+					<!-- Filter items per page -->
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems", @class = "form-input" })
+				</div>
+			</div>
+
+		</div>
+	</div>
+</form>
+
+<div id="target">
+	<partial name="Member/_OrderList" />
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		// search-as-you-type feature
+		$('#filter_min_amount, #filter_max_amount').on('input', e => {
+			var min_amt = $('#filter_min_amount').val() ?? 0.01;
+			var max_amt = $('#filter_max_amount').val() ?? 999999.99;
+
+			if (min_amt < 0 || min_amt > 999999.99) {
+				$('#amount-err').text('Minimum amount must between 0.01 to 999999.99 only.');
+				return;
+			} else if (max_amt < 0 || min_amt > 999999.99) {
+				$('#amount-err').text('Maximum amount must between 0.01 to 999999.99 only.');
+				return;
+			} else if (min_amt > max_amt) {
+				$('#amount-err').text('Minimum amount must less than maximum amount.');
+				return;
+			} else {
+				$('#amount-err').text('');
+			}
+
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 200);
+		});
+
+		$('#filter_service_category').on('change', function() {
+			var categories_str_arr = $(this).val();
+			var categories_int_arr = categories_str_arr ? categories_str_arr.map(Number) : [];
+			var categories_json = JSON.stringify(categories_int_arr);
+			$('[name="service_categories"]').val(categories_json);
+		});
+
+		$('#payment-method, #filter_service_category, #filter_pageitems').on('change', e => {
+			$(e.target.form).submit();
+		});
+	</script>
+}

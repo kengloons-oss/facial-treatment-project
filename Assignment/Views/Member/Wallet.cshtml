@@ -1,0 +1,149 @@
+﻿@using X.PagedList.Mvc.Core
+@{
+	Layout = "_MemberLayout";
+	ViewBag.Title = "Wallet";
+
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Home", "/Home/Home"),
+		new KeyValuePair<string, string>("Meow Wallet", null)
+	};
+}
+
+<div class="container">
+	<div class="columns">
+		<!-- left-side -->
+		<div class="column column col-5">
+			<div class="card card-body card-shadow" style="padding:1.5rem; margin-right:1.5rem;">
+				<div class="card-header">
+					<div class="card-title h5">
+						<!-- Back Button -->
+						<button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+						<!-- Page Title -->
+						Top Up Wallet
+					</div>
+				</div>
+				@* <h2>Top Up Wallet</h2> *@
+
+				<form id="topUpForm" method="post" action="/Member/TopUp">
+					<div class="flexend">
+						<!-- Top Up Amount -->
+						<div class="form-group">
+							<label for="topUpAmount" class="form-label">Top-Up Amount: </label>
+							<input type="number" id="topUpAmount" name="topUpAmount" class="form-input topUpAmount" required />
+							<span class="form-input-hint error-message"></span>
+						</div>
+
+						<!-- Hidden Input for Payment Method -->
+						<input type="hidden" id="paymentMethod" name="paymentMethod" value="2" /> <!-- "2" is for Stripe -->
+						<!-- Buttons -->
+						<div class="text-right" style="padding-top:16px;">
+							<button type="reset" class="btn btn-secondary">Reset</button>
+							<button id="submitButton" type="submit" class="btn btn-primary">Top Up</button>
+						</div>
+					</div>
+				</form>
+
+
+			</div>
+		</div>
+		<!-- right-side -->
+		<div class="column column col-7">
+			<br /><br />
+			<h2>Meow-Wallet History</h2><br />
+			<div class="afilter-card-body">
+
+				<form data-ajax="true"
+					  data-ajax-update="#target"
+					  data-ajax-loading="#loader"
+					  id="f">
+					<div class="card-filter-row ">
+						<label for="filter_type">Transaction Type: </label>
+						@Html.DropDownList("filterType", Helpers.transactionTypeFilter, "All", new { id = "filter_type" })
+
+						<label for="filter_month">Month: </label>
+						@Html.DropDownList("filterMonth", Helpers._monthList, "All", new { id = "_monthList" })
+
+						<label for="filter_pageitems">Items Per Page: </label>
+						@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+
+					</div>
+				</form>
+
+				<!-- Target container for transactions -->
+				<div id="target">
+					<partial name="_Wallet" />
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<!-- Success Alert -->
+@if (TempData["Success"] != null)
+{
+	<script>
+		Swal.fire({
+			title: 'Success!',
+			text: "@TempData["Success"]",
+			icon: 'success',
+			confirmButtonText: 'OK'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				window.location.href = "/Member/Wallet"; // Redirect after success
+			}
+		});
+	</script>
+}
+
+<!-- Error Alert -->
+@if (TempData["Alert_Error"] != null)
+{
+	<script>
+		Swal.fire({
+			title: "@TempData["Error_Title"]",
+			text: "@TempData["Alert_Error"]",
+			icon: 'error',
+			confirmButtonText: 'OK'
+		}).then((result) => {
+			if ("@TempData["Error_Title"]" === "Top Up Failed" && result.isConfirmed) {
+				window.location.href = "/Member/Wallet"; // Redirect after error
+			}
+		});
+	</script>
+}
+
+
+
+@section foot {
+	<script>
+		// Auto-submit filters
+		$('#_monthList, #filter_pageitems, #filter_type').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+		// AJAX submit for top-up form with SweetAlert2
+		$('#topUpForm').on('submit', function (e) {
+			e.preventDefault(); // Prevent default form submission
+
+			const form = $(this);
+			const topUpAmount = parseFloat($('#topUpAmount').val()); // Get the top-up amount
+
+			// Validation: Amount cannot be less than 0
+			if (isNaN(topUpAmount) || topUpAmount < 0 || topUpAmount < 5 ) {
+				// Display error with SweetAlert2
+				Swal.fire({
+					icon: 'error',
+					title: 'Invalid Amount',
+					text: 'The Top-Up Amount cannot be less than 0 and more than 5. Please enter a valid amount.',
+					confirmButtonText: 'OK'
+				});
+				return; // Prevent form submission
+			}
+
+			HTMLFormElement.prototype.submit.call(this);
+		});
+	</script>
+}
+

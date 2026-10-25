@@ -1,0 +1,299 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Order | Create";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Order", "/Order/Staff/List"),
+		new KeyValuePair<string, string>("Create", null)
+	};
+}
+
+@section head {
+	<script src="/js/general/packageDetailModal.js"></script>
+}
+
+<form method="post"
+	  class=""
+	  data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+	<div class="container card my-pagecard" style="padding-left:22px;"><!-- container card (got border line) -->
+		<div class="columns">
+
+			<!-- left-side -->
+			<div class="formformat column col-6 col-sm-12">
+
+				<div class="card-header"> 
+					<div class="card-title h5"> 
+						<!-- Back Button -->
+						<button class="topleft-back" type="button" data-get="/Order/Staff/List" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+						<!-- Page Title -->
+						Create Order
+					</div> 
+				</div>
+
+				<div class="card-body my-pagecard-body">
+					<div id="cart-item-list">
+						<div class="cart-item check_all">
+							<!-- Select Member -->
+							<div class="form-group">
+								<label class="form-label">Select a Member: </label>
+								<select id="member_select" name="member_id" class="select2" style="width: 100%;">
+									<option value="" selected disabled>-- Select Member --</option>
+									@foreach (var member in ViewBag.Members)
+									{
+										if (!string.IsNullOrEmpty(ViewBag.Member_id) && member.Id == int.Parse(ViewBag.Member_id))
+										{
+											<option value="@member.Id" selected>
+												@member.Person.Name - @member.Person.Email
+											</option>
+										}
+										else
+										{
+											<option value="@member.Id">
+												@member.Person.Name - @member.Person.Email
+											</option>
+										}
+									}
+								</select>
+							</div>
+
+							<div class="form-group">
+								<label for="search_package" class="form-label">Search package: </label>
+								@Html.TextBox("package_name", "", new { type = "search", @class = "form-input", autofocus = "", id = "search_package", data_trim = "" })
+							</div>
+						</div>
+
+						<div id="target">
+							<partial name="Staff/_PackageList" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- right-side -->
+			<div class="formformat-right column col-4 col-sm-12 ">
+				<div class="container grid-lg responsive-text1 calculatepreview" style="margin-top:30px;">
+					<div class="columns">
+						<div class="column col-12">
+							<!-- Selected Packages -->
+							<div id="selected-package-container">
+								<label><b>Selected Package(s): </b></label>
+								<div id="selected-package-list">
+									@* jquery append selected package *@
+								</div>
+							</div>
+							<br />
+							<div class="divider"></div>
+
+							<!-- Subtotal -->
+							<div class="columns" style="margin-top:0.3rem">
+								<div class="column col-7 text-left">
+									Subtotal :
+								</div>
+								<div class="column col-5 text-right">
+									RM<span id="summary-subtotal">0.00</span>
+								</div>
+							</div>
+
+							<!-- Subtotal -->
+							<div class="columns" style="margin-top:0.3rem">
+								<div class="column col-7 text-left">
+									Tax (8%) :
+								</div>
+								<div class="column col-5 text-right">
+									RM<span id="summary-tax">0.00</span>
+								</div>
+							</div>
+
+							<!-- Subtotal -->
+							<div class="columns" style="margin-top:0.3rem">
+								<div class="column col-7 text-left">
+									Discount :
+								</div>
+								<div class="column col-5 text-right">
+									RM<span id="summary-discount">0.00</span>
+								</div>
+							</div>
+
+							<!-- Total Amount -->
+							<div class="columns" style="margin-top:0.3rem">
+								<div class="column col-7 text-left">
+									Total Amount :
+								</div>
+								<div class="column col-5 text-right">
+									RM<span id="summary-total">0.00</span>
+								</div>
+							</div>
+
+							<!-- Checkout Button -->
+							<div class="text-right" style="padding-top:16px; margin-right:0px;">
+								<button type="button" id="checkout" class="btn btn-primary">Checkout <i class="fa-solid fa-angles-right"></i></button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+</form>
+
+@section foot {
+	<script>
+		var selected_packages = [];
+		var subtotal = 0.00;
+		var tax = 0.00;
+		var discount = 0.00;
+		var total_amount = 0.00;
+
+		$(document).ready(function() {
+			// $('#member_select').select2({
+			// 	placeholder: "Search for a member email",
+			// 	allowClear: true
+			// });
+		});
+
+		// select member
+		$('#member_select').on('change', function(e) {
+			e.preventDefault();
+			$(e.target.form).submit();
+		});
+
+		let timer = null;
+
+		// search-as-you-type feature
+		$('#search_package').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 200);
+		});
+
+		// update summary
+		function updateSummary() {
+			var temp_subtotal = 0.00;
+
+			selected_packages.forEach(pkg => {
+				temp_subtotal += pkg.price;
+			});
+			subtotal = temp_subtotal;
+
+			tax = parseFloat(subtotal * 0.08);
+
+			discount = (subtotal + tax) * member_discount;
+
+			total_amount = subtotal + tax - discount;
+
+			$('#summary-subtotal').text(subtotal.toFixed(2));
+			$('#summary-tax').text(tax.toFixed(2));
+			$('#summary-discount').text(discount.toFixed(2));
+			$('#summary-total').text(total_amount.toFixed(2));
+		}
+
+		// update selected package list
+		function updateSelectedList() {
+			$('#selected-package-list').empty();
+
+			selected_packages.forEach(pkg => {
+				var columnDiv = document.createElement('div');
+				columnDiv.className = "columns";
+				columnDiv.style.marginTop = "0.3rem";
+
+				var innerLeftColumn = document.createElement('div');
+				innerLeftColumn.className = "column col-7 text-left";
+				innerLeftColumn.textContent = pkg.name;
+
+				// Create the right column div with class "column col-5 text-right"
+				var innerRightColumn = document.createElement('div');
+				innerRightColumn.className = "column col-5 text-right";
+
+				// Create the span for the discount amount
+				var columnSpan = document.createElement('span');
+				columnSpan.textContent = pkg.price;
+
+				// Add "RM" text and append the span to the right column
+				innerRightColumn.textContent = "RM";
+				innerRightColumn.appendChild(columnSpan);
+
+				// Append the left and right columns to the outer div
+				columnDiv.appendChild(innerLeftColumn);
+				columnDiv.appendChild(innerRightColumn);
+
+				// Example: Append the entire structure to an existing element in the DOM
+				$('#selected-package-list').append(columnDiv);
+			});
+
+			updateSummary();
+		}
+
+		// Select a package
+		$(document).on('change', '.cart-select', function (e) {
+			e.preventDefault();
+			const packageId = $(this).data('id');
+
+			if ($(this).is(':checked')) {
+				// Create the package object
+				const package = {
+					id: packageId,
+					photo: $(this).data('photo'),
+					name: $(this).data('name'),
+					price: $(this).data('price')
+				};
+				selected_packages.push(package);
+			} else {
+				selected_packages = selected_packages.filter(pkg => pkg.id !== packageId);
+			}
+
+			updateSelectedList();
+			console.log(selected_packages);
+		});
+
+		// Remove a package
+		$(document).on('click', '.remove-package-btn', function () {
+			const packageId = $(this).data('id');
+
+			selected_packages = selected_packages.filter(pkg => pkg.id !== packageId);
+
+			const selectButton = $(`.select-package-btn[data-id="${packageId}"]`);
+			selectButton.prop('disabled', false).text('Select');
+
+			updateSelectedList();
+		});
+
+
+
+		// Checkout
+		$(document).on('click', '#checkout', e => {
+			e.preventDefault();
+
+			var packageList = [];
+
+			selected_packages.forEach(pkg => {
+				packageList.push(pkg.id);
+			});
+
+			var form = $('<form>', {
+				method: 'POST',
+				action: '/Order/Staff/Checkout'
+			});
+
+			form.append($('<input>', {
+				type: 'hidden',
+				name: 'member_id',
+				value: $('#member_select').val()
+			}));
+
+			form.append($('<input>', {
+				type: 'hidden',
+				name: 'packages',
+				value: JSON.stringify(packageList)
+			}));
+
+			$('body').append(form);
+			form.submit();
+		});
+	</script>
+}

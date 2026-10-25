@@ -1,0 +1,112 @@
+﻿@using X.PagedList.Mvc.Core
+@{
+    Layout = "_StaffLayout";
+    ViewBag.Title = "TopUpReward | List";
+
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Top Up Reward", "/TopUpReward/RewardList"),
+        new KeyValuePair<string, string>("List", null)
+    };
+}
+
+<form data-ajax="true"
+      data-ajax-update="#target"
+      data-ajax-loading="#loader"
+      id="f">
+
+    <div class="container-filter">
+        <div class="half">
+            <div class="card card-blue-shadow">
+                <div class="card-txtfield card-body">
+                    <label for="filter_amountRange">Minimum Top Up Range: </label>
+                    @Html.DropDownList(
+                             "amountRange",
+                             Helpers.amount_range_list,
+                             new { @class = "form-control", id = "filter_amountRange" }
+                             )
+
+                    <label for="filter_pageitems">Items Per Page: </label>
+                    @Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if(Helpers.isManager()){
+        <div class="card-button-right">
+            <button data-get="/TopUpReward/Create" id="b_create">Create New Top Up Reward</button>
+        </div>
+    }
+
+    <div class="search-container card-right-tb">
+        <div class="search-bar">
+            @Html.TextBox("name", "",
+                     new { type = "search", @class = "search-input", autofocus = "", placeholder = "Search Category Name Here..." })
+            <button id="search-button"><i class="fas fa-search"></i></button>
+        </div>
+    </div>
+</form>
+
+<div id="target">
+    <partial name="Staff/_RewardList" />
+</div>
+
+@section foot {
+    <script>
+        let timer = null;
+
+        $('#name').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 100);
+        });
+
+        $('#filter_pageitems').on('change', e => {
+            $(e.target.form).submit();
+        });
+
+        $(document).on('click', '.activate-btn', function (e) {
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: "Activate Top Up Reward",
+                text: 'Do you confirm to activate this reward?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: "Yes"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const url = '/TopUpReward/Activate/' + id;
+                    $('<form>').appendTo(document.body).attr({ method: 'post', action: url }).submit();
+                }
+            });
+        });
+
+        $(document).on('click', '.deactivate-btn', function (e) {
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: "Deactivate  Top Up Reward",
+                text: 'Do you confirm to deactivate this reward?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: "Yes"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const url = '/TopUpReward/Deactivate/' + id;
+                    $('<form>').appendTo(document.body).attr({ method: 'post', action: url }).submit();
+                }
+            });
+        });
+
+                $('#filter_amountRange').on('change', function () {
+            $(this.form).submit();
+        });
+
+    </script>
+}

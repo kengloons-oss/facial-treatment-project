@@ -1,0 +1,78 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Order | List";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Order", "/Order/Staff/List"),
+		new KeyValuePair<string, string>("List", null)
+	};
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+
+					<label for="filter_package_num">Number of Package Purchased: <b id="package_num_result">@ViewBag.Package_num</b></label>
+					@Html.TextBox("package_num", (int)ViewBag.Package_num, new { @type = "range", @min = "1", @max = "50", @step = "1", id = "filter_package_num" })
+
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="card-button-right">
+		<button data-get="/Order/Staff/Create" id="b_create">Create New Order</button>
+	</div>
+
+	<div class="search-container card-right-tb">
+		<div class="search-bar">
+			@Html.TextBox("member_email", "",
+							new { type = "search", @class = "search-input", autofocus = "", data_trim = "", placeholder = "Search Member Email Here..." })
+			<button id="search-button"><i class="fas fa-search"></i></button>
+		</div>
+	</div>
+</form>
+
+
+
+
+<div id="target">
+	<partial name="Staff/_OrderList" />
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		// search-as-you-type feature
+		$('#member_email').on('input', e => {
+
+			console.log($('#member_email').val());
+
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 50);
+		});
+
+		// update range input result
+		$('#filter_package_num').on('input', function () {
+			var package_num = $(this).val();
+			$('#package_num_result').text(package_num);
+		});
+
+		// update list
+		$('#filter_package_num, #filter_pageitems').on('change', e => {
+			$(e.target.form).submit();
+		});
+	</script>
+}

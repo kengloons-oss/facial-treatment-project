@@ -1,0 +1,105 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Appointment>
+
+@{
+	string[] fields = ["ID", "Appointment Title", "Time", "Date", "Created Review", "Last Review Date"];
+	string json_categories = System.Text.Json.JsonSerializer.Serialize<int[]>(ViewBag.Selected_categories);
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+	@Model.Count() of @Model.TotalItemCount record(s)) &nbsp;&nbsp;| &nbsp;
+	Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+	<thead>
+		<tr>
+			@foreach (var f in fields)
+			{
+				string dir = "asc";
+				string sort = "";
+				string sort_icon = "asc";
+
+				if (f == ViewBag.Sort)
+				{
+					dir = ViewBag.Dir == "desc" ? "asc" : "desc";
+					sort = ViewBag.Dir;
+					sort_icon = dir == "asc" ? "fa-sort-up" : "fa-sort-down";
+				}
+
+				<th class="table_headers">
+					<a data-ajax="true"
+					   data-ajax-update="#target"
+					   data-ajax-loading="#loader"
+					   href="?title=@ViewBag.Title&start_datetime=@ViewBag.Start_datetime&end_datetime=@ViewBag.End_datetime&min_review=@ViewBag.Min_review&max_review=@ViewBag.Max_review&sort=@f&dir=@dir&page_items=@ViewBag.Page_items&page=@Model.PageNumber" class="@sort">
+						@f<i class='fas @sort_icon'></i>
+					</a>
+				</th>
+			}
+			<th class="table_headers">Action</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		@{
+			if (Model.Count() == 0)
+			{
+				<tr>
+					<td colspan="7">No available review record ~.</td>
+				</tr>
+			} 
+			else
+			{
+				foreach (var r in Model)
+				{
+					<tr>
+						<td>@r.Code</td>
+						<td>@r.Title</td>
+						<td>@Helpers.FormatTime2(r.Start_datetime) - @Helpers.FormatTime2(r.End_datetime)</td>
+						<td>@Helpers.FormatDate(r.Start_datetime)</td>
+						<td>@r.AppointmentReviews.Count()</td>
+						<td>@r.AppointmentReviews.Max(ar => ar.Comment_date)</td>
+						<td>
+							<!-- Detail Button -->
+							<button class="uk-button uk-button-default uk-button-small pastel-edit-btn" data-get="/Review/Create/@r.Id" uk-tooltip="View This Details">
+								<span uk-icon="pencil" class="uk-icon"></span> <span class="button-text">Detail</span>
+							</button>
+						</td>
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
+
+<nav class="admin-pager">
+	@{
+		var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+		options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+		options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+		options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+		options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+		var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "target",
+				LoadingElementId = "#loader",
+			};
+	}
+
+	@Html.PagedListPager(
+		Model,
+		p => $"?title={ViewBag.Title}&start_datetime={ViewBag.Start_datetime}&end_datetime={ViewBag.End_datetime}&min_review={ViewBag.Min_review}&max_review={ViewBag.Max_review}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page_items={ViewBag.Page_items}&page={p}",
+		PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+	)
+</nav>
+
+<script>
+
+</script>

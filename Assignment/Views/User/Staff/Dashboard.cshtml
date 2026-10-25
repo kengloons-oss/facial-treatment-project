@@ -1,0 +1,357 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Dashboard";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Dashboard", "/User/Staff/Dashboard"),
+		// new KeyValuePair<string, string>("List", null)
+	};
+
+	var position = ViewBag.Position;
+	bool isManager = Helpers.isManager();
+}
+
+<div class=" mydashboard-dashboard">
+	<div class="uk-width-expand uk-grid">
+		<!-- Left Section: Cards and Tabs -->
+		<div class="uk-width-expand">
+			<!-- Cards -->
+			<div class="uk-grid-column-small uk-child-width-1-3@s  mydashboard-cards" uk-grid>
+				<!-- Card 1 -->
+				<div class="mydashboard-card dbcard1">
+
+					<!-- Total Profit -->
+					<div class="container">
+						<div class="columns col-gapless">
+							<div class="column col-12 text-left"><h5>@(isManager ? "Total Profit (Current Month)" : "Total Appointment Pending") :</h5></div>
+						</div>
+						<div class="columns col-gapless">
+							<div class="column col-4">
+								<img src="/images/dashboard/@(isManager ? "handcash.png" : "pending.png")" class="dashboardicon">
+							</div>
+							<div class="column col-8 cardword text-left">
+								<h3>
+									@(isManager ? "RM" + Helpers.FormatMoneyStr((double?)ViewBag.TotalProfit ?? 0.00) : @ViewBag.StaffPendingAppointment)
+								</h3>
+							</div>
+						</div>
+					</div>
+
+
+				</div>
+				<!-- Card 2 -->
+				<div class="mydashboard-card dbcard2">
+					<!-- Estimated Salary Cost -->
+					<div class="container">
+						<div class="columns col-gapless">
+							<div class="column col-12 text-left"><h5>@(isManager ? "Salary Cost (Current Month)" : "Current Month Commission") :</h5></div>
+						</div>
+						<div class="columns col-gapless">
+							<div class="column col-4">
+								<img src="/images/dashboard/@(isManager ? "salary.png" : "handcash.png")" class="dashboardicon">
+							</div>
+							<div class="column col-8 cardword text-left">
+								<h3>RM @Helpers.FormatMoneyStr(isManager ? (double?)ViewBag.EstimatedSalaryCost ?? 0.00 : (double?)ViewBag.CurrentMonthCommission ?? 0.00)</h3>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Card 3 -->
+				<div class="mydashboard-card">
+					<!-- Package Sold -->
+					<div class="container">
+						<div class="columns col-gapless">
+							<div class="column col-12 text-left"><h5>@(isManager ? "Package Sold (Current Month)" : "Estimated Income") :</h5></div>
+						</div>
+						<div class="columns col-gapless">
+							<div class="column col-4 text-center">
+								<img src="/images/dashboard/@(isManager ? "sold.png" : "banknotes.png")" class="dashboardicon">
+							</div>
+							<div class="column col-4 cardword text-center">
+								<h3>
+									@(isManager ? ViewBag.CurrentMonthPackageCount : "RM" + @Helpers.FormatMoneyStr((double?)ViewBag.EstimatedIncome ?? 0.00))
+								</h3>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Tabs -->
+			<div class="uk-width-expand mydashboard-tabs">
+				<!-- Tabs Name -->
+				<ul class="uk-tab mydashboard-tab-container" uk-tab>
+					<!-- Tab 1 -->
+					<li><a href="#tab1" style="text-decoration:none;">Commission Summary</a></li>
+					<!-- Tab 2 -->
+					@if (isManager)
+					{
+						<li><a href="#tab2" style="text-decoration:none;">Profit Summary</a></li>
+					}
+					<!-- Tab 3 -->
+					<li><a href="#tab3" style="text-decoration:none;">Top 5 Packages Sold</a></li>
+				</ul>
+				<!-- Tabs Content Container -->
+				<!-- (specific tab layout need：form-horizontal,columns,column col-4,form-label,form-input) -->
+				<ul class="uk-switcher uk-margin">
+					<!-- Tab 1 Content -->
+					<li id="tab1">
+						<!-- Commission Summary Chart (Both) -->
+						<div class="commission-selector-container">
+							<form data-ajax="true"
+								  data-ajax-update="#commission-summary-target"
+								  data-ajax-loading="#loader"
+								  action="/User/Staff/CommissionSummaryChart"
+								  id="commission-summary-chart-form"
+								  class="form-horizontal">
+								<div class="columns">
+									<!-- View By -->
+									<div class="column col-4">
+										<label for="commission-view-by" class="form-label">View By:</label>
+										<select id="commission-view-by" name="commission_viewby" class="form-select">
+											<option value="month" selected>Month</option>
+											<option value="year">Year</option>
+										</select>
+									</div>
+
+									<!-- Month of Year -->
+									<div class="column col-4 view-month-select">
+										<label for="commission-month" class="form-label">Month of Year:</label>
+										<input type="month" id="commission-month" name="commission_year_month" class="form-input" />
+									</div>
+
+									<!-- Year -->
+									<div class="column col-4 view-year-select">
+										<label for="commission-year" class="form-label">Year:</label>
+										<select id="commission-year" name="commission_year" class="form-select" asp-items="@ViewBag.YearSelectItem">
+										</select>
+									</div>
+
+								</div>
+							</form>
+
+							<div id="commission-summary-target" class="dboard-graphshow">
+								<partial name="Staff/_CommissionSummaryChart" />
+							</div>
+						</div>
+					</li>
+					<!-- Tab 2 Content -->
+					@if (isManager)
+					{
+						<li id="tab2">
+
+							<!-- Profit Summary Report -->
+							<div class="profit-selector-container">
+								<form data-ajax="true"
+									  data-ajax-update="#profit-summary-target"
+									  data-ajax-loading="#loader"
+									  action="/User/Staff/ProfitSummaryChart"
+									  id="profit-summary-chart-form"
+									  class="form-horizontal">
+									<div class="columns">
+										<!-- View By -->
+										<div class="column col-4">
+											<label for="profit-view-by" class="form-label">View By:</label>
+											<select id="profit-view-by" name="profit_viewby" class="form-select">
+												<option value="month" selected>Month</option>
+												<option value="year">Year</option>
+											</select>
+										</div>
+
+										<!-- Month of Year -->
+										<div class="column col-4 view-month-select">
+											<label for="profit-month" class="form-label">Month of Year:</label>
+											<input type="month" id="profit-month" name="profit_year_month" class="form-input" />
+										</div>
+
+										<!-- Year -->
+										<div class="column col-4 view-year-select">
+											<label for="profit-year" class="form-label">Year:</label>
+											<select id="profit-year" name="profit_year" class="form-select" asp-items="@ViewBag.YearSelectItem">
+											</select>
+										</div>
+
+									</div>
+								</form>
+
+								<div id="profit-summary-target" class="dboard-graphshow">
+									<partial name="Staff/_ProfitSummaryChart" />
+								</div>
+							</div>
+
+						</li>
+					}
+					<!-- Tab 3 Content -->
+					<li id="tab3">
+						<!-- Top 5 Packages Sold -->
+						<div class="package-selector-container">
+							<form data-ajax="true"
+								  data-ajax-update="#package-summary-target"
+								  data-ajax-loading="#loader"
+								  action="/User/Staff/Top5PackageSoldChart"
+								  id="package-summary-chart-form"
+								  class="form-horizontal">
+								<div class="columns">
+									<!-- View By -->
+									<div class="column col-4">
+										<label for="package-view-by" class="form-label">View By:</label>
+										<select id="package-view-by" name="package_viewby" class="form-input">
+											<option value="month" selected>Month</option>
+											<option value="year">Year</option>
+										</select>
+									</div>
+
+									<!-- Month of Year -->
+									<div class="column col-4 view-month-select">
+										<label class="form-label">Month of Year:</label>
+										<input type="month" id="package-month" class="form-input" name="package_year_month" />
+									</div>
+
+									<!-- Year -->
+									<div class="column col-4 view-year-select">
+										<label class="form-label">Year:</label>
+										<select id="package-year" name="package_year" class="form-input" asp-items="@ViewBag.YearSelectItem">
+										</select>
+									</div>
+								</div>
+							</form>
+
+							<div id="package-summary-target" class="dboard-graphshow">
+								<partial name="Staff/_Top5PackageSoldSummaryChart" />
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+		</div><!-- end of Left Section: Cards and Tabs -->
+		<!-- Right Scrollable Section -->
+		<div class=" mydashboard-scrollable">
+			<!-- Total Pending Appointment (All Staff) -->
+			<div class="wrap">
+				<div class="voucher-title-card">Pending Appointment List (@(isManager ? ViewBag.CurrentPendingAppointments.Count : ViewBag.AppointmentPendingList.Count))</div>
+				<div class="detail-smallmenu">
+					<a href="#" class="detail-dot">
+						<i class="fa-solid fa-ellipsis"></i>
+					</a>
+					<ul class="dot-dropdown voucher-dot">
+						<li style="margin-top:2px;"><a href="/Appointment/Calendar">Go to View</a></li>
+						<li><a href="/Appointment/Create">Book Appointment</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="voucher-scroll">
+				@if (isManager)
+				{
+					@foreach (var appointment in (isManager ? ViewBag.CurrentPendingAppointments : ViewBag.AppointmentPendingList))
+					{
+						var timeUntilAppointment = appointment.Start_datetime - DateTime.Now;
+
+						<div class="voucher-card">
+							<h3>@appointment.Title</h3>
+							<span>Type: @Helpers.GetAppointmentType(appointment.Type)</span>
+
+							@if (appointment.Staff != null)
+							{
+								<span>Person In Charge: @appointment.Staff.Person.Name</span>
+							}
+
+							@if (appointment.Member != null)
+							{
+								<span>Customer: @appointment.Member.Person.Name</span>
+							}
+							<span>Time left: @($"{timeUntilAppointment.Days} days, {timeUntilAppointment.Hours} hours, {timeUntilAppointment.Minutes} minutes")</span>
+						</div>
+					}
+				}
+				else { }
+
+			</div>
+		</div><!-- end of Right Scrollable Section -->
+
+	</div>
+</div>
+
+
+@section foot {
+	<script>
+		//detail dots
+		$(document).ready(function() {
+			// Toggle the dropdown menu on click
+			$('.detail-dot').on('click', function(e) {
+				e.preventDefault(); // Prevent default anchor behavior
+				$(this).next('.dot-dropdown').toggle(); // Toggle the dropdown
+			});
+
+			// Hide the dropdown if clicked outside
+			$(document).on('click', function(e) {
+				if (!$(e.target).closest('.detail-dot, .dot-dropdown').length) {
+					$('.dot-dropdown').hide(); // Hide all dropdowns
+				}
+			});
+
+		});
+
+		$(document).ready(function() {
+			$('.view-year-select').hide();
+
+			var currentDate = new Date();
+			var currentYear = currentDate.getFullYear();
+			var currentMonth = currentDate.getMonth() + 1;
+			var currentYearMonth = currentYear + '-' + currentMonth;
+			var pastYear = currentYear - 20;
+			var minDate = pastYear + "-01";
+			var maxDate = currentYear + "-" + (currentMonth < 10 ? "0" + currentMonth : currentMonth);
+
+			// ====================
+			// commission summary
+			// ====================
+
+			$('#commission-month').attr('min', minDate);
+			$('#commission-month').attr('max', maxDate);
+
+			// Set the default value of the input field
+			$('#commission-month').val(currentYearMonth);
+
+			// ====================
+			// profit summary
+			// ====================
+
+			$('#profit-month').attr('min', minDate);
+			$('#profit-month').attr('max', maxDate);
+
+			// Set the default value of the input field
+			$('#profit-month').val(currentYearMonth);
+
+			// ====================
+			// package summary
+			// ====================
+
+			$('#package-month').attr('min', minDate);
+			$('#package-month').attr('max', maxDate);
+
+			// Set the default value of the input field
+			$('#package-month').val(currentYearMonth);
+		});
+
+		$('#commission-view-by, #profit-view-by, #package-view-by').on('change', function(e) {
+			var value = $(this).val();
+
+			if (value == "month") {
+				$(this).closest('.columns').find('.view-month-select').show();
+				$(this).closest('.columns').find('.view-year-select').hide();
+			} else if (value == "year") {
+				$(this).closest('.columns').find('.view-year-select').show();
+				$(this).closest('.columns').find('.view-month-select').hide();
+			}
+			$(e.target.form).submit();
+		});
+
+		$('#commission-month, #commission-year, #profit-month, #profit-year, #package-month, #package-year').on('change', function(e) {
+			$(e.target.form).submit();
+		});
+	</script>
+}

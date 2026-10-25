@@ -1,0 +1,382 @@
+﻿@{
+    Context.Response.Headers["Cache-Control"] = "no-store";
+    Context.Response.Headers["Pragma"] = "no-cache";
+    Context.Response.Headers["Expires"] = "0";
+
+    dynamic User = Helpers.GetUser();
+    var UserAvatar = "/images/user/defaultProfile.png";
+    if (User.UserAvatar != null)
+    {
+        UserAvatar = "/images/user/member/" + User.UserAvatar;
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link rel="shortcut icon" href="/images/favicon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <!-- Font Awesome for icon-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- ----- -->
+    <!-- alert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- jquery -->
+    <script src="/js/jquery.min.js"></script>
+    <!-- toast ui calendar -->
+    <link rel="stylesheet" href="/css/tui/toastui-calendar.min.css" />
+    <script src="/js/tui/toastui-calendar.min.js"></script>
+    <!-- UIKit -->
+    <link rel="stylesheet" href="/css/uikit/uikit.css" />
+    <script src="/js/uikit/uikit.min.js"></script>
+    <script src="/js/uikit/uikit-icons.min.js"></script>
+    <!-- Spectre.css -->
+    <link rel="stylesheet" href="/css/spectre/spectre.css">
+    <link rel="stylesheet" href="/css/spectre/spectre-exp.css">
+    <link rel="stylesheet" href="/css/spectre/spectre-icons.css">
+    <!-- chart -->
+    <script src="/js/chart/chart.umd.min.js"></script>
+
+    <!-- OTHERS -->
+    <link rel="stylesheet" href="/css/base.css">
+
+    <script src="/js/component/home.js"></script>
+    <!-- main-searchbar -->
+    <link rel="stylesheet" href="/css/component/main-searchbar.css">
+    <script src="/js/component/main-searchbar.js"></script>
+    <!-- searchbar -->
+    <link rel="stylesheet" href="/css/component/searchbar.css">
+    <script src="/js/component/searchbar.js"></script>
+    <!-- OTHERS (have override library) -->
+    <link rel="stylesheet" href="/css/component/memsidebar.css">
+
+    @RenderSection("head", false)
+</head>
+<body>
+    <!-- Header bar-->
+    <!-- Header bar-->
+    <header>
+        <!-- logo -->
+        <img src="/images/favicon.png" width="50" />
+
+        <!-- 1 -->
+        <div class="header-con1">
+            <div class="shop-name">@("OwO Meow Beauty")</div>
+            <!-- Home -->
+            <a href="/Home/Home">
+                <i class="fa-solid fa-house"></i>
+                <span>@("Home")</span>
+            </a>
+            <!-- contact -->
+            <a href="https://wa.me/60123456789" target="_blank">
+                <i class="fa-solid fa-comment-dots"></i>
+                <span>@("Contact Us")</span>
+            </a>
+        </div><!-- end 1 -->
+        <!-- 2 -->
+        <div class="header-con2" style="margin:0 30px 0 30px;">
+            <!-- For main search bar -->
+
+            <div class="main-search-container">
+                <div class="main-search-bar">
+                    <input type="text" id="main-search-input" placeholder="@($"Search Package...")" />
+                    <button id="main-search-button"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="suggest-container hide" id="suggest-product" style="width:525px; padding:30px; gap:50px; padding-left:50px;"></div>
+            </div>
+        </div><!-- end 2 -->
+        <!-- 3 -->
+        <div class="header-con3">
+            <!-- scan qr -->
+            <a href="/Home/ScanQR">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>QR SCAN</span>
+            </a>
+
+            <!-- appointment -->
+            @{
+                if (User.UserName != null)
+                {
+                    <a href="/Appointment/Calendar" id="appointment-calendar-link">
+                        <i class="fa-regular fa-calendar-plus"></i>
+                        <span>Appointment</span>
+                    </a>
+                }
+            }
+
+            <!-- package -->
+            <a href="/Package/List">
+                <i class="fa-solid fa-fan"></i>
+                <span>@("Package")</span>
+            </a>
+
+            @if (User.UserName != null)
+            {
+                <!-- After login -->
+                <!-- inbox -->
+                <a href="/Inbox/PersonalInboxList">
+                    <i class="fa-solid fa-envelope-open-text "></i>
+                    <span>@("Inbox")</span>
+                </a>
+
+                <!-- cart -->
+                <a href="/Package/Cart">
+                    <span class="badge" style="width:0.9rem; height:1rem;" data-badge="0">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </span>
+                    <span>@("Cart")</span>
+                </a>
+            }
+
+        </div><!-- end 3 -->
+        <!-- 4 -->
+        <div class="header-con4">
+            <!-- Switch Language -->
+            <!--<a href="#" class="lang-switch" data-lang="en" >
+                <i class="fa-solid fa-globe"></i><span>English</span>
+            </a>-->
+            <!-- Login -->
+            @if (User.UserName == null)
+            {
+                <a href="/Login/Login" id="loginLink">
+                    <i class="fa-solid fa-user-large"></i>
+                    <span>Login</span>
+                </a>
+            }
+            else
+            {
+                <!-- After login -->
+                <!-- Logout -->
+                <a href="/Login/Logout" id="loginLink" style="margin-left:1.2rem; margin-right:0.4rem;">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+
+                <!-- profile -->
+                <div class="dropdown">
+                    <div class="member-profile-box" id="open-sidebar-btn" uk-toggle="target: #memsidebar">
+                        <img src="@UserAvatar" class="memsidebar-avatar" />
+                        <span>&nbsp;<i class="fa-solid fa-bars"></i>&nbsp;Hi, @User.UserName!</span>
+                    </div>
+                </div>
+            }
+
+        </div><!--end 4 -->
+
+    </header><!-- end Header bar-->
+
+    <!-- NO breadcrumb -->
+
+    @if (TempData["Alert_Success"] != null)
+    {
+        <script>
+            var success_title = "@TempData["Success_Title"]";
+            var userRole = "@ViewBag._UserRole";
+
+            Swal.fire({
+                title: "@TempData["Success_Title"]",
+                text: "@TempData["Alert_Success"]",
+                icon: 'success',
+                showDenyButton: false,
+                showCancelButton: false,
+                confirmButtonText: "OK"
+            });
+        </script>
+
+    }
+    else if (TempData["Alert_Error"] != null)
+    {
+        <script>
+            var error_title = "@TempData["Error_Title"]";
+
+            Swal.fire({
+                title: error_title,
+                text: "@TempData["Alert_Error"]",
+                icon: 'error',   @* You can use 'success', 'error', 'warning', 'info', or 'question' *@
+                showDenyButton: false,
+                showCancelButton: true,
+                confirmButtonText: "OK"
+            }).then((result) => {
+                if(error_title === "Access Denied"){
+                    if(result.isConfirmed){
+                        window.location.href = "/Login/Login";
+                    } else {
+                        window.location.href = "/Home/Home";
+                    }
+                }
+            });
+        </script>
+    }
+
+    @* <button id="open-sidebar-btn" uk-toggle="target: #memsidebar" class="btn btn-primary"> *@
+    @*     Open Sidebar *@
+    @* </button> *@
+    <!-- Member Sidebar -->
+    <!-- Member Sidebar -->
+    <div id="memsidebar" uk-offcanvas="overlay: true; flip: true">
+        <div class="uk-offcanvas-bar">
+
+            <!-- User -->
+            <div class="mem-profile">
+                <img src="@UserAvatar" />
+            </div>
+            <div class="mem-subtitle2">@Helpers.FormatId("MB", User.UserId)</div>
+            <div class="mem-title ">@User.UserName</div>
+            <div class="mem-subtitle text-dark">@User.UserEmail</div>
+            <div class="divider"></div>
+
+            <!-- nav part -->
+            <ul class="uk-nav" data-uk-nav>
+                <!-- Home -->
+                <li><a href="/Home/Home">Home</a></li>
+
+                <!-- Dashboard -->
+                <li><a href="/User/Member/Dashboard">Dashboard</a></li>
+
+                <!-- Account -->
+                <li class="uk-parent">
+                    <a href="#">Account <span uk-nav-parent-icon></span></a>
+                    <ul class="uk-nav-sub">
+                        <li><a href="/User/Profile">Profile</a></li>
+                        <li><a href="/Inbox/PersonalInboxList">Inbox</a></li>
+                    </ul>
+                </li>
+
+                <!-- Explore Packages -->
+                <li><a href="/Package/List">Explore Packages</a></li>
+
+                <!-- My Cart -->
+                <li><a href="/Package/Cart">My Cart</a></li>
+
+                <!-- My Order -->
+                <li><a href="/Order/List">My Order</a></li>
+
+                <!-- Meow Wallet -->
+                <li class="uk-parent">
+                    <a href="#">Meow Wallet <span uk-nav-parent-icon></span></a>
+                    <ul class="uk-nav-sub">
+                        <li><a href="/Member/Wallet">My Meow Wallet</a></li>
+                        <li><a href="/Member/TopUp">Top Up</a></li>
+                    </ul>
+                </li>
+
+                <!-- Appointment -->
+                <li class="uk-parent">
+                    <a href="#">Appointment <span uk-nav-parent-icon></span></a>
+                    <ul class="uk-nav-sub">
+                        <li><a href="/Appointment/Calendar" class="appointment-schedule">Appointment Schedule</a></li>
+                        <li><a href="/Appointment/Create" class="make-appointment">Make New Appointment</a></li>
+                        <li><a href="#">Review & Rating</a></li>
+                    </ul>
+                </li>
+
+                <!-- Referral -->
+                <li><a href="/ReferralReward/MemberReferral">Referral</a></li>
+            </ul><!-- end nav part -->
+            <!-- Logout -->
+            <button class="logout-btn" onclick="redirectToLogin()">Logout &nbsp;<i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+
+        </div>
+    </div><!-- end Member Sidebar -->
+
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <p>&copy; 2024 OWO Meow Beauty. All rights reserved.</p>
+    </footer>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="/js/jquery.validate.min.js"></script>
+    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="/js/app.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    @RenderSection("foot", false)
+
+    <script>
+
+        function back() {
+            history.back();
+        }
+
+        $(document).ready(function () {
+            // Fetch and update the cart count
+			function updateCartItemsCount() {
+				$.ajax({
+					url: '/Home/GetCartItemsCount',  // Adjust the URL if necessary
+					type: 'GET',
+					success: function (response) {
+						// Update the cart items count badge
+						$('.badge').attr('data-badge', response);
+					},
+					error: function () {
+						console.error('Error occurred while fetching cart items count.');
+					}
+				});
+			}
+
+			// Call the updateCartItemsCount function on page load to set initial value
+			updateCartItemsCount();
+
+            $('.lang-switch').on('click', function (e) {
+                e.preventDefault();
+
+                // Get the clicked language text
+                var selectedLanguage = $(this).find('span').text();
+
+                // Update all `.lang-switch span` elements to show the selected language
+                $('.lang-switch span').each(function () {
+                    var currentLang = $(this).text();
+                    $(this).text(currentLang === 'English' ? '中文' : 'English');
+                });
+
+                // (Optional) Log the selected language
+                console.log('Selected Language:', selectedLanguage);
+            });
+
+            $(document).on('click', '.found_product', function() {
+                var click_product_id = $(this).attr('product_id');
+
+                window.location.href = '/Package/Detail/' + click_product_id;
+            });
+
+            // Trigger the search on input change
+            $('#main-search-input').on('input', function () {
+                var keyword = $(this).val();
+
+                // If the keyword is empty, clear the results
+                if (keyword.length === 0) {
+                    $('#suggest-product').empty();  // Adjust the result container ID if needed
+                    return;
+                }
+
+                // AJAX call to the SearchBar action
+                $.ajax({
+                    url: '/Home/SearchBar',  // Make sure the URL matches the route to your action
+                    type: 'GET',
+                    data: { keyword: keyword },
+                    success: function (response) {
+                        // Replace the content of the results container with the returned partial view
+                        $('#suggest-product').html(response);
+                    },
+                    error: function () {
+                        console.error('Error occurred while searching.');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

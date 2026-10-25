@@ -1,0 +1,72 @@
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "Order Success";
+
+    // Breadcrumbs
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Orders", "/Member/Orders"),
+        new KeyValuePair<string, string>("Order Success", $"/Member/OrderSuccess/{Model.Order.Id}")
+    };
+}
+
+<div class="container card my-pagecard" style="padding-left:22px; margin-top: 30px;">
+    <div class="columns">
+        <div class="formformat column col-12">
+            <div class="card-header text-center bg-success text-white">
+                <div class="card-title h5">Order Successful!</div>
+            </div>
+
+            <div class="card-body my-pagecard-body">
+                <p class="text-center">
+                    <strong>Thank you for your purchase!</strong> <br />
+                    Your order has been successfully placed.
+                </p>
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Payment Method</th>
+                            <th>Subtotal</th>
+                            <th>Tax</th>
+                            <th>Discount</th>
+                            <th>Final Amount</th>
+                            <th>Payment Date</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Model.Order.Id</td>
+                            <td>
+                                @(
+                                    Model.Order.Payment_method == 1 ? "Cash" :
+                                    Model.Order.Payment_method == 2 ? "Stripe" :
+                                    Model.Order.Payment_method == 3 ? "Meow Wallet" : "Unknown"
+                                    )
+                            </td>
+                            
+                            <td>RM @Model.Order.Subtotal.ToString("0.00")</td>
+                            <td>RM @Model.Order.Tax.ToString("0.00")</td>
+                            <td>RM @Model.Order.Discount.ToString("0.00")</td>
+                            <td>RM @Model.Order.Amount.ToString("0.00")</td>
+                            <td>@Model.Order.Payment_date.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center mt-4">
+                    <a href="/Package/List" class="btn btn-secondary">Continue Shopping</a>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="/Order/List" class="btn btn-secondary">Orders History</a>
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                If you have any issues, please <a href="/ContactUs">Contact Us</a>.
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,53 @@
+﻿@{
+	// commission summary chart
+	var commission_title = ViewBag.CommissionChartTitle;
+	var commission_labels = ViewBag.CommissionChartLabels;
+	var commission_data = ViewBag.CommissionChartData;
+}
+
+<canvas id="commission-summary-chart" class="chartwidthfilled" ></canvas>
+
+<script>
+	$(document).ready(function() {
+		// commission summary chart
+		const labels = @Html.Raw(Json.Serialize(commission_labels));
+		const data = @Html.Raw(Json.Serialize(commission_data));
+
+		const ctx = $('#commission-summary-chart');
+		const commissionChart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: "@commission_title",
+					data: data,
+					backgroundColor: [
+						'rgba(75, 192, 192, 0.2)',
+						'rgba(54, 162, 235, 0.2)',
+						'rgba(255, 206, 86, 0.2)',
+						'rgba(153, 102, 255, 0.2)',
+						'rgba(255, 159, 64, 0.2)',
+						'rgba(255, 99, 132, 0.2)'
+					],
+					borderColor: [
+						'rgba(75, 192, 192, 1)',
+						'rgba(54, 162, 235, 1)',
+						'rgba(255, 206, 86, 1)',
+						'rgba(153, 102, 255, 1)',
+						'rgba(255, 159, 64, 1)',
+						'rgba(255, 99, 132, 1)'
+					],
+					borderWidth: 1
+				}]
+			},
+			options: {
+				indexAxis: 'y',
+				scales: {
+					x: {
+						beginAtZero: true
+					}
+				}
+			}
+		});
+	});
+</script>

@@ -1,0 +1,69 @@
+﻿@{
+	// top 5 package sold summary chart
+	var package_title = ViewBag.PackageChartTitle;
+	var package_labels = ViewBag.PackageChartLabels;
+    var package_data = ViewBag.PackageChartData;
+}
+
+<canvas id="package-summary-chart"></canvas>
+
+<script>
+	$(document).ready(function() {
+        // package summary chart
+        const labels = @Html.Raw(Json.Serialize(package_labels));
+        const data = @Html.Raw(Json.Serialize(package_data));
+
+        function isDataInvalid(arr) {
+            return arr.every(item => item === 0 || item === ""); // Check if all elements are 0 or ""
+        }
+
+        // Get the context of the canvas where the doughnut chart will be rendered
+        var ctx = $('#package-summary-chart')[0].getContext('2d');
+
+        if (isDataInvalid(data) || isDataInvalid(labels)) {
+            // Display a message or log a warning if no data is available
+            $('#package-summary-chart')
+                .replaceWith('<p class="no-data-message">No data available to display.</p>');
+        } else {
+            // Create a new doughnut chart
+            var packageChart = new Chart(ctx, {
+                type: 'doughnut', // Doughnut chart type
+                data: {
+                    labels: labels,  // Labels for each segment
+                    datasets: [{
+                        label: "@package_title",
+                        data: data,  // Data for each segment
+                        backgroundColor: [
+                            '#FF7F50', // Coral
+                            '#6495ED', // Cornflower Blue
+                            '#FFD700', // Gold
+                            '#90EE90', // Light Green
+                            '#FF69B4', // Hot Pink
+                            '#87CEEB'  // Sky Blue
+                        ],
+                        borderColor: [
+                            '#FF6347', // Tomato
+                            '#4682B4', // Steel Blue
+                            '#FFC107', // Amber
+                            '#66CDAA', // Medium Aquamarine
+                            '#FF1493', // Deep Pink
+                            '#4682B4'  // Steel Blue
+                        ],
+                        borderWidth: 1  // Border width of the segments
+                    }]
+                },
+                options: {
+                    responsive: true,  // Makes the chart responsive to screen size changes
+                    plugins: {
+                        legend: {
+                            position: 'top',  // Position of the legend
+                        },
+                        tooltip: {
+                            enabled: true  // Enables tooltips when hovering over the segments
+                        }
+                    }
+                }
+            });
+        }
+	});
+</script>

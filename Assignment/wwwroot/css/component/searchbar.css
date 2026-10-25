@@ -1,0 +1,115 @@
+.search-product-container{
+  display:flex;
+  flex-direction: column;
+  gap: .8rem;
+  margin-bottom: 10px;
+}
+.search-container {
+  position: relative;
+
+  
+}
+.search-bar {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  position: relative;
+  display: inline-flex;
+}
+.search-input {
+  padding: 8px 100px 8px 10px;
+  border: 0px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  max-width: 100%;
+}
+#search-button, #searchButton {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.suggest-container {
+  
+    position: absolute;
+    top: 40px;
+    z-index: 100;
+  display: flex; 
+  justify-content: flex-start; 
+  gap: 10px;
+  background-color: #fff;
+  padding: .7em;
+  margin-top: .0em;
+  border: 1px solid #ccc;
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: black;
+}
+.suggestcol-2 {
+  flex: 1;
+}
+.suggestcol-2 {
+  justify-content: flex-start;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  max-width: 100%;
+  background-color: #fff;
+  padding: .7em;
+  border: 1px solid #ccc;
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: black;
+}
+.suggestcol-2 img {
+  max-width: 20%;
+  height: auto;
+}
+.suggestion-item {
+  padding-block: .4em;
+  border-bottom: 1px solid #ccc;
+}
+.suggestion-item:first-child {
+  padding-top: 0em;
+}
+.suggestion-item:last-child {
+  padding-bottom: 0em;
+  border-bottom: none;
+}
+.product-container {
+  
+  padding: .2em;
+  transition: .15s border;
+  display: flex; 
+  align-items: center; 
+  border: 1px solid transparent;
+  border-radius: .3em;
+}
+.product-container:hover {
+  border: 1px solid var(--gray);
+}
+.product.container > img {
+  display: flex;
+  align-items: center;
+}
+.product-info {
+  margin-left: 10px; 
+}
+.product-info h4 {
+  margin: 0; 
+}
+.product-info p {
+  margin: 5px 0 0; 
+}
+
+.hide {
+  display: none;
+}
+.show {
+  display: block;
+}
+.showflex {
+  display: flex;
+}

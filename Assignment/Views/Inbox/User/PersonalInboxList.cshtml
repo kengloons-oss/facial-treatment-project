@@ -1,0 +1,178 @@
+﻿@using Assignment.Models
+
+@{
+	dynamic User = Helpers.GetUser();
+
+	if (User.UserRole == "staff")
+	{
+		Layout = "_StaffLayout";
+	}
+
+	ViewBag.Title = "Inbox";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Personal Inbox", null)
+	};
+
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="search-container card-right-tb">
+		<div class="search-bar">
+			@Html.TextBox("title", "",
+							new { type = "search", @class = "search-input", data_trim = "", placeholder = "Search Title Here..." })
+			<button id="search-button"><i class="fas fa-search"></i></button>
+		</div>
+	</div>
+</form>
+
+<div id="target">
+	<partial name="User/_PersonalInboxList">
+</div>
+
+<!-- Modal for selecting deactivated services -->
+<div id="modal-id" class="modal">
+	<a href="#close" class="modal-overlay" aria-label="Close"></a>
+
+	<div class="modal-container">
+		<div class="modal-header">
+			<a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+			<!-- Inbox Title -->
+			<h3 class="modal-title"></h3>
+		</div>
+
+		<div class="modal-body" style="height:80%;">
+			<div class="content my-adjustedmodal" style="height:100%;">
+				<!-- Inbox Message -->
+				<div>
+					<label>
+						<!-- List of deactivated services -->
+						<div id="inboxMsg"></div>
+					</label>
+
+					<div id="post-date"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal-footer">
+			<button id="viewDetail" class="btn btn-primary">View Futher Detail</button>
+		</div>
+	</div>
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		$('#title').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 1);
+		});
+
+		$('#filter_pageitems').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+		$(document).on('click', '.detial-btn', function (e) {
+			e.preventDefault();
+
+			const inboxId = $(this).data('id'); // Get the category ID
+
+			$.ajax({
+				type: 'POST',
+				url: '/Inbox/GetInboxDetail/',
+				data: {
+					inboxId: inboxId
+				},
+				success: function (response) {
+					if(!response.success){
+						if(response.location){
+							window.location.href = response.location;
+						}
+						else{
+							// No inbox found, prompt user
+							Swal.fire({
+								title: response.title,
+								text: response.msg,
+								icon: 'error',
+								showCancelButton: false,
+								confirmButtonText: "OK"
+							});
+						}
+
+					}
+					else { // If services are found
+						console.log(response.inbox);
+
+						//Inbox title
+						$('.modal-title').empty(); // Clear existing services
+						 $('.modal-title').append(`
+								<h3 class="modal-title">${response.inbox.title}</h3>
+						`);
+
+						// Inbox message
+						$('#inboxMsg').empty();
+
+						$('#inboxMsg').append(`
+								<div id="inboxMsg">${response.inbox.message}</div>
+						`);
+
+						// Post date
+						$('#post-date').empty();
+
+						// Assuming `response.inbox.created_datetime` is in ISO format or a parsable format
+						const formattedDate = new Date(response.inbox.created_datetime).toLocaleString();
+
+						$('#post-date').append(`
+							<div class="post-date">Posted Date: ${formattedDate}</div>
+						`);
+
+						// Store the category ID in the confirm button's data attribute
+						$('#viewDetail').data('inbox-id', inboxId);
+
+						// Add the 'active' class to show the modal
+						$('#modal-id').addClass('active');
+					}
+				},
+				error: function () {
+					Swal.fire({
+						title: "Error",
+						text: "Failed to retrieve inbox message. Please try again.",
+						icon: "error"
+					});
+				}
+			});
+		});
+
+		// Ensure close modal works
+		$(document).on('click', '.btn-clear', function (e) {
+			e.preventDefault(); // Prevent the default anchor behavior
+			$('#modal-id').removeClass('active'); // Remove the 'active' class to hide the modal
+		});
+
+		// Confirm service selection and proceed with activation
+		$(document).on('click', '#viewDetail', function () {
+			const inboxId = $(this).data('inbox-id'); // Retrieve the category ID
+
+			window.location.href = "/Inbox/PersonalInboxDetail/" + inboxId;
+		});
+	</script>
+}

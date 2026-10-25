@@ -1,0 +1,118 @@
+/* Define root variables for easy customization */
+:root {
+    --alert-bg: #ffffff;
+    --alert-border: #dddddd;
+    --alert-shadow: rgba(0, 0, 0, 0.1);
+    --icon-size: 60px;
+    --success-color: #A5DC86;
+    --error-color: #F27474;
+    --warning-color: #3FC3EE;
+    --pulse-scale: 1.1;
+    --pulse-duration: 2s;
+    --btndefault: #445069;
+    --btndefaulthover: #313742;
+    --btngreen: #3B8E40;
+    --btnred: #cb3c3c;
+}
+
+/* Overlay styles */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Dark semi-transparent background */
+    z-index: 999; /* Ensure overlay is behind the alert box */
+}
+
+/* Make sure alert is above the overlay */
+.alert-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--alert-bg);
+    border: 1px solid var(--alert-border);
+    padding: 50px;
+    box-shadow: 0 0 10px var(--alert-shadow);
+    z-index: 1000;
+    border-radius: 10px;
+    max-width: 80%;
+    text-align: center;
+}
+
+/* Hide element */
+.is-hidden {
+    display: none;
+}
+
+/* Content of the alert box */
+.alert-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Icon within the alert */
+.alert-icon {
+    margin-bottom: 5px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+}
+
+/* Pulse animation */
+.pulse-animation {
+    animation: pulse var(--pulse-duration) infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(var(--pulse-scale));
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Icon styles */
+.success-icon { stroke: var(--success-color); }
+.error-icon { stroke: var(--error-color); }
+.warning-icon { stroke: var(--warning-color); }
+
+/* Buttons for actions */
+.alert-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.alert-buttons button {
+    background: var(--btngreen);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.alert-buttons button:hover {
+  opacity: 0.7;
+}
+
+.alert-buttons button.btnred {
+    background: var(--btnred);
+}
+.alert-buttons button.cancel {
+    background: var(--btndefault);
+}
+.alert-buttons button.cancel:hover{
+    background: var(--btndefaulthover);
+}

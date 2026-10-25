@@ -1,0 +1,271 @@
+﻿@model IEnumerable<Package>
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Order | Checkout";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Order", "/Order/Staff/List"),
+		new KeyValuePair<string, string>("Checkout", null)
+	};
+	int index = 1;
+}
+@section head {
+	<script src="/js/general/packageDetailModal.js"></script>
+}
+
+<div class="container card my-pagecard" style="padding-left:22px;">
+	<!-- con1 -->
+	<div class="columns">
+		<!-- con2 -->
+		<!-- left-side -->
+		<div class="formformat column col-8 col-sm-12">
+			<div class="card-header">
+				<div class="card-title h5">
+					<!-- Back Button -->
+					<button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+					<!-- Page Title -->
+					Checkout
+				</div>
+			</div>
+
+			<div class="card-body my-pagecard-body">
+				<div id="cart-item-list">
+					@{
+						foreach (var package in Model)
+						{
+							<div class="cart-item" id="item-@package.Id" data-id="@package.Id">
+								<div class="cart-con-1">
+									<!-- cart-con-1 -->
+									<div class="cart-select-section">
+										@index.
+									</div>
+									<div class="cart-img">
+										@{
+											string? path = package.PackagePhotos.Where(pp => pp.Type == 1).Select(pp => pp.Path).FirstOrDefault();
+										}
+										@if (!string.IsNullOrEmpty(path))
+										{
+											<img src="/images/package/cover/@path" />
+										}
+										else
+										{
+											<img src="/images/package/defaultImage.png" />
+										}
+									</div>
+								</div><!-- end cart-con-1 -->
+
+								<div class="cart-con-2">
+									<!-- cart-con-2 -->
+									<div class="cart-con-row1">
+										<div class="cart-itemname">
+											<span class="label_id">@package.Code</span> -
+											<span class="label_name">@package.Name</span> -
+											<span class="label_price">RM @package.Price.ToString("N2")</span>
+										</div>
+
+										<div class="cart-action">
+											<button class="remove b_remove remove-cart-item detail-btn" data-id="@package.Id">View Detail</button>
+										</div>
+									</div>
+
+									<div class="cart-con-row2">
+										<span class="label-text cart-item-detail">Total Treatment: @package.Treatment</span>
+									</div>
+								</div><!-- end cart-con-2 -->
+							</div>
+
+							index++;
+						}
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- right-side -->
+		<div class="formformat-right column col-4 col-sm-12 ">
+			<div class="container grid-lg responsive-text1 calculatepreview" style="margin-top:30px;">
+				<div class="columns">
+					<!-- Member Detail -->
+					<div class="column col-12">
+						<!-- Subtotal without Discount -->
+						<!-- Member Id -->
+						<div class="form-group">
+							<label for="OrderId" class="form-label">Member Id:</label>
+							<div class="fake-input">@ViewBag.Member.Code</div>
+						</div>
+
+						<!-- Member Name -->
+						<div class="form-group">
+							<label for="CreatedDate" class="form-label">Member Name:</label>
+							<div class="fake-input">@ViewBag.Member.Person.Name</div>
+						</div>
+
+						<br />
+						<div class="divider"></div>
+					</div>
+
+					<!-- Order Summary -->
+					<div class="column col-12">
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Subtotal Amount:
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="subtotalWithoutDiscount">@ViewBag.Subtotal</span>
+							</div>
+						</div>
+
+						<!-- Total Tax -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Tax Charge (8%) :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="totalTax">@ViewBag.Tax</span>
+							</div>
+						</div>
+
+						<!-- Member Discount Amount -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Member Discount Amount :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="totalAmount">@ViewBag.Discount</span>
+							</div>
+						</div>
+
+						<!-- Final Total -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Total Amount :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="grandTotal">@ViewBag.TotalAmount</span>
+							</div>
+						</div>
+						
+					
+						<div class="columns">
+							<div class="column col-12-ml-auto text-right">
+								<br />
+								<button class="uk-button uk-button-default uk-button-small pastel-edit-btn" id="pay-wallet-btn" data-method="3">
+								Pay by Meow-Wallet:
+								<br />( Current Balance: RM @ViewBag.Member.Credit )</span>
+							</button>
+							<button class="btn btn-primary" id="pay-cash-btn" data-method="1">Pay by Cash</button>
+							</div>
+						</div>
+						<br />
+
+					</div>
+				</div>
+			</div>
+
+			
+		</div>
+	</div>
+</div>
+
+<!-- Modal for selecting deactivated services -->
+<div id="package-modal" class="modal">
+	<a class="modal-overlay" aria-label="Close"></a>
+
+	<div class="modal-container">
+		<div class="modal-header">
+			<a class="btn btn-clear float-right" aria-label="Close" id="close-package-modal"></a>
+			<h5 class="modal-title">Package Details Of</h5>
+			<span id="package-name">xxxxx</span>
+		</div>
+		<div class="modal-body">
+			<div class="content my-adjustedmodal">
+				@* <p>Here are more details about the package...</p> *@
+				<ul id="package-content"></ul>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary btn-close" id="close-package-modal-btn">Close</button>
+		</div>
+	</div>
+</div>
+
+@section foot {
+	<script>
+		var packageList = [];
+
+		$(document).ready(function() {
+			var member_credit = parseFloat(@ViewBag.Member.Credit);
+			var total_amount = parseFloat(@ViewBag.TotalAmount);
+
+			if (member_credit < total_amount) {
+				$('#pay-wallet-btn').prop('disabled', true);
+			}
+
+			$('.cart-item').each(function () {
+				var packageId = $(this).data('id');
+
+				packageList.push(packageId);
+			});
+		});
+
+		$('#pay-cash-btn, #pay-wallet-btn').on('click', function(e) {
+			var payment_method = $(this).data('method');
+			console.log(packageList);
+
+			// Show loading spinner
+			loadingAlert();
+
+			$.ajax({
+				url: '/Order/Staff/Payment',
+				type: 'POST',
+				data: {
+					member_id: '@ViewBag.Member.Id',
+					packages: JSON.stringify(packageList),
+					payment_method: payment_method
+				},
+				success: function(response) {
+					var res = JSON.parse(response);
+
+					if (res[0] == 'success') {
+						Swal.close();
+
+						Swal.fire({
+							title: "Create Order",
+							text: res[1],
+							icon: 'success', // You can use 'success', 'error', 'warning', 'info', or 'question'
+							showDenyButton: false,
+							showCancelButton: false,
+							confirmButtonText: "Yes"
+						}).then((result) => {
+							if (result.isConfirmed) {
+								const url = '/Order/Staff/Detail/' + res[2];
+								window.location.replace(url);
+							}
+						});
+					} else {
+						Swal.close();
+
+						Swal.fire({
+							title: "Create Order",
+							text: res[1] + " Please create your order again later.",
+							icon: 'error', // You can use 'success', 'error', 'warning', 'info', or 'question'
+							showDenyButton: false,
+							showCancelButton: false,
+							confirmButtonText: "Yes"
+						}).then((result) => {
+							if (result.isConfirmed) {
+								window.location.replace('/Order/Staff/Create');
+							}
+						});
+					}
+				},
+				error: function(error) {
+					console.log("Error:", error);
+				}
+			});
+		});
+	</script>
+}

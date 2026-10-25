@@ -1,0 +1,144 @@
+﻿@model Member
+
+@{
+	Layout = "_MemberLayout";
+	ViewBag.Title = "Member | Referral";
+	int index = 0;
+}
+
+<div style="border: 2px solid #ddd; padding: 15px; display: inline-block;">
+	<h3 style="text-align:center; margin:0;">My Referral QR Code</h3>
+	<!-- Display the QR Code -->
+	<div class="qrcodecon">
+		<img src="@ViewBag.QRCodeImageUrl" id="qrcode" class="text-center" alt="Referral QR Code">
+	</div>
+	<div class="refferalbtn">
+		<button id="download-btn" class="btn"><i class="fa-regular fa-circle-down"></i> Download QR Code</button>
+		<button id="copy-url-btn" class="btn btn-primary"><i class="fa-regular fa-copy"></i> Copy URL</button>
+	</div>
+</div>
+
+<div class="container-2 con-progress">
+	<h2>My Referral Progress</h2><br>
+	<div class="reference-summary-bar-container">
+		<div class="progress-bar-wrapper">
+			<div class="progress-bar"></div>
+
+			@foreach (var referral in ViewBag.RewardList)
+			{
+
+				<div class="progress-separator"
+					 data-goal="@referral.Num_of_referral"
+					 data-left="@($"{referral.Num_of_referral - Model.Referral_purchase}")"
+					 data-separator="@referral.Num_of_referral"
+					 data-credit="@referral.Free_credit">
+				</div>
+			}
+		</div>
+		<div class="reference-content">
+			@foreach (var referral in ViewBag.RewardList)
+			{
+				<script>console.log("times")</script>
+				<div class="reference-item" data-index="@index">
+					<span>@referral.Num_of_referral <i class="fa-solid fa-user-plus"></i></span>
+					@* <small>Get RM @referral.Free_credit Credit <i class="fa-solid fa-sack-dollar"></i></small> *@
+				</div>
+
+				index++;
+				
+			}
+		</div>
+		<div id="hover-tooltip" class="hover-tooltip"></div>
+	</div>
+</div>
+
+
+@section foot {
+	<script>
+		// click download button
+		$('#download-btn').on('click', e => {
+			var qrCodeUrl = "@ViewBag.QRCodeImageUrl";
+
+			var downloadLink = $('<a>')
+				.attr('href', qrCodeUrl)
+				.attr('download', 'Referral.png')
+				.appendTo('body');
+
+			downloadLink[0].click();
+			downloadLink.remove();
+		});
+
+		// click copy url button
+		$('#copy-url-btn').on('click', e => {
+			navigator.clipboard.writeText("@ViewBag.QRCodeUrl").then(() => {
+				Swal.fire({
+					title: "URL copied to clipboard!",
+					text: 'Let\'s share it to your friends!',
+					icon: 'success', // You can use 'success', 'error', 'warning', 'info', or 'question'
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "Yes"
+				});
+			}).catch(err => {
+				Swal.fire({
+					title: "Action Failed",
+					text: 'Failed to copy URL...',
+					icon: 'error', // You can use 'success', 'error', 'warning', 'info', or 'question'
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "Yes"
+				});
+			});
+		});
+
+		$(document).ready(function() {
+			// Calculate total references needed
+			var totalGoal = 0;
+			var separators = [];
+			$('.progress-separator').each(function() {
+				var goal = $(this).data('goal');
+				totalGoal += goal;
+				separators.push(goal);
+			});
+
+			// User's total reference progress
+			var totalUserProgress = @Model.Referral_purchase;
+			var percentage = (totalUserProgress / totalGoal) * 100;
+
+			// Animate the progress bar to show the total progress
+			$('.progress-bar').animate({
+				width: percentage + '%'
+			}, 400);
+
+			// Position separators on the progress bar
+			$('.progress-separator').each(function(index) {
+				var goal = $(this).data('goal');
+				var separatorPosition = (goal / totalGoal) * 100;
+				$(this).css({
+					left: separatorPosition + '%'
+				});
+
+				// Align reference-item spans with separators
+				var item = $('.reference-item').eq(index);
+				item.css({
+					left: separatorPosition + '%'
+				});
+			});
+
+			// Show tooltip on hover
+			$('.progress-separator').hover(function() {
+				var left = $(this).data('left');
+				var credit = $(this).data('credit');
+				var tooltipText = left > 0 ? 'Left ' + left + ' more to get ' + credit + ' credit' : 'Done';
+				$('#hover-tooltip').text(tooltipText)
+									.css({
+										top: $(this).position().top - 30,
+										left: $(this).position().left - $('#hover-tooltip').outerWidth() / 2 + $(this).outerWidth() / 2
+									})
+									.show();
+			}, function() {
+				$('#hover-tooltip').hide();
+			});
+		});
+	</script>
+}

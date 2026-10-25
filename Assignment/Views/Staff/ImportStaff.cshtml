@@ -1,0 +1,118 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Staff | Import";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Staff", "/Staff/List"),
+		new KeyValuePair<string, string>("Import Staff", null)
+	};
+}
+
+<button data-get="/Staff/List">Back</button>
+<br>
+
+<form enctype="multipart/form-data" id="multipartForm" method="POST">
+	<div class="container">
+		<div class="columns">
+
+			<!-- left-side -->
+			<div class="column col-6 col-sm-12 card" style="padding-bottom: 25px; margin: 0.8rem 0rem 4rem 0rem;">
+				<div class="card-header">
+					<div class="card-title h5">
+						<h4 style="margin:0px;">Import Staff</h4>
+					</div>
+				</div>
+
+				<div class="card-body">
+					@* <!-- Import File --> *@
+					@* <div class="form-group"> *@
+					@* 	<label class="upload"> *@
+					@* 		<!-- Preview file name here --> *@
+					@* 		<label for="file" class="form-label" style="display:none;"></label> *@
+					@* 		<div class="upload-insidelayout columns col-gapless"> *@
+					@* 			<div class="column col-10"> *@
+					@* 				<div class="upload-inputbox"> *@
+					@* 					<label for="file-upload" class="file-upload-label"> *@
+					@* 						<i class="fa-solid fa-cloud-arrow-up"></i> Import file by dropping it here, or <span class="select-text">selecting one</span>. *@
+					@* 					</label> *@
+					@* 					<!-- File input --> *@
+					@* 					<input id="file-upload" type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="file-input" onchange="displayFileName(this)" /> *@
+					@* 				</div> *@
+					@* 				<!-- File name display --> *@
+					@* 				<div id="file-name-display" style="margin-top: 10px; font-size: 14px; color: #333;"></div> *@
+					@* 			</div> *@
+					@* 		</div> *@
+					@* 	</label> *@
+					@* 	<span class="form-input-hint error-message" id="importFileError"></span> *@
+					@* </div> *@
+
+					<div class="form-group">
+						<label for="import" class="form-label">Import user (CSV, XLS, XLSX): </label>
+						<input type="file" name="file" id="fileInput" accept=".csv, .xls, .xlsx" class="form-input" required />
+						<span class="form-input-hint error-message" id="importFileError"></span>
+					</div>
+
+					<!-- Download template -->
+					<div class="form-group">
+						<label for="template" class="form-label">Template for import staff (.xlsx): </label>
+						<a href="/wwwroot/files/template(staff).xlsx" download>Download Excel Template</a>
+					</div>
+
+					<!-- Download template -->
+					<div class="form-group">
+						<label for="template" class="form-label">Template for import staff (.csv): </label>
+						<a href="/wwwroot/files/template(staff).csv" download>Download CSV Template</a>
+					</div>
+
+					<div>* Email cannot be duplicate, make sure the email are not duplicate in the file and database</div>
+
+				</div>
+
+				<div class="card-button-right">
+					<input type="reset" value="Reset" />
+					<input type="submit" value="Save" />
+				</div>
+			</div>
+
+		</div>
+	</div>
+</form>
+
+<script>
+	// Validate file input to check for CSV, XLS, and XLSX and ensure only one file is uploaded
+	$('#multipartForm').on('submit', function(event) {
+		var fileInput = $('#file-upload')[0]; // Access the DOM element
+		var filePath = fileInput.value;
+		var allowedExtensions = /(\.csv|\.xls|\.xlsx)$/i;
+
+		// Check file format
+		if (!allowedExtensions.exec(filePath)) {
+			showError($('#importFileError'), "Invalid file format. Please upload a CSV, XLS, or XLSX file.");
+			event.preventDefault(); // Prevent form submission
+			return;
+		}
+
+		// Check if only one file is uploaded
+		if (fileInput.files.length !== 1) {
+			showError($('#importFileError'), "Please upload only one file.");
+			event.preventDefault(); // Prevent form submission
+			return;
+		}
+
+		// Clear any error messages if validation passes
+		clearError($('#importFileError'));
+		HTMLFormElement.prototype.submit.call(this);
+	});
+
+	Define the displayFileName function
+	function displayFileName(event) {
+		Get the uploaded file name
+		var fileInput = event.target;
+		var fileName = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+
+		Display the file name in the designated area
+		document.getElementById('fileNameDisplay').innerText = 'Selected file: ' + fileName;
+	}
+</script>

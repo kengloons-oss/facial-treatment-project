@@ -1,0 +1,195 @@
+﻿@{
+    ViewBag.Title = "Package List";
+
+    // breadcrumb data
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Package", null)
+    };
+}
+
+<link rel="stylesheet" href="/css/component/packagelistcom.css">
+<script src="/js/component/packagelistcom.js"></script>
+
+<div class="showcase-layout">
+    <div class="showcase-filter-container">
+        <form data-ajax="true"
+              data-ajax-update="#target"
+              data-ajax-loading="#loader"
+        >
+            <input type="hidden" name="dir" />
+            <input type="hidden" name="service_categories" />
+
+            <div class="sep-search-container2">
+                <div class="sep-search-bar" style="width:auto;">
+                    <input style="font-size:.65rem;"
+                           type="text"
+                           id="name"
+                           name="name"
+                           class="sep2-search-input"
+                           placeholder="Search by package name or description..." />
+                </div>
+                <button type="submit" id="sep-search-button"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="filtercon-box">
+                <h4 class="filtered-itemno">
+                    <text>@Model.Count Packages Found.</text>
+                    <a href="/Package/List" class="clear-all">Clear All</a>
+                </h4>
+                <div class="divider" style="margin: 18px 0px 12px 0px;"></div>
+
+                <div class="sc-filter">
+                    <div class="sc-filter-header">
+                        <span>Price Range :</span>
+                        <i class="fas fa-chevron-up"></i>
+                    </div>
+                    <div class="sc-filter-content" style="display: block;">
+                        <div class="pr-spinner-container">
+                            <div class="pr-spinner">
+                                <input type="number"
+                                       name="min_price"
+                                       id="pr-min-value"
+                                       value="0"
+                                       min="0"
+                                       max="1000000" />
+                            </div>
+                            <div class="pr-range-slider">
+                                <div class="pr-range-bar"></div>
+                                <div class="pr-range-fill"></div>
+                                <div class="pr-range-handle" id="pr-min-handle" data-tooltip="Min"></div>
+                                <div class="pr-range-handle" id="pr-max-handle" data-tooltip="Max"></div>
+                            </div>
+                            <div class="pr-spinner">
+                                <input type="number"
+                                       id="pr-max-value"
+                                       name="max_price"
+                                       value="999999"
+                                       min="0"
+                                       max="1000000" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="sc-filter">
+                    <div class="sc-filter-header">
+                        <span>Sort By </span>
+                        <i class="fas fa-chevron-up"></i>
+                    </div>
+                    <div class="sc-filter-content" style="display: block;">
+                        <ul>
+                            <li><input type="radio" name="sort" id="sort-name" value="name" @(ViewBag.SortOrder == "name" ? "checked" : "")> <label for="sort-name">Name</label></li>
+                            <li><input type="radio" name="sort" id="sort-validity" value="validity" @(ViewBag.SortOrder == "validity" ? "checked" : "")> <label for="sort-validity">Validity</label></li>
+                            <li><input type="radio" name="sort" id="sort-price-high-to-low" value="price-high-to-low" @(ViewBag.SortOrder == "price-high-to-low" ? "checked" : "")> <label for="sort-price-high-to-low">Price - High to Low</label></li>
+                            <li><input type="radio" name="sort" id="sort-price-low-to-high" value="price-low-to-high" @(ViewBag.SortOrder == "price-low-to-high" ? "checked" : "")> <label for="sort-price-low-to-high">Price - Low to High</label></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sc-filter">
+                    <div class="sc-filter-header">
+                        <span>Category</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="sc-filter-content">
+                        <ul>
+                            @foreach (var cat in ViewBag.ServiceCategories)
+                            {
+                                <li>
+                                    <input type="checkbox"
+                                           name="selected_categories"
+                                           value="@cat.Id"
+                                    /> @cat.Name
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <button type="submit" id="apply-button">Apply</i></button>
+            </div><!-- end of filtercon-box -->
+        </form>
+    </div><!-- end of filter container -->
+    
+    <div id="target" class="showcase-card-container">
+        <partial name="Member/_PackageList" />
+    </div>
+</div><!-- end of layout -->
+
+<script>
+    var selected_categories = [];
+    let timer = null;
+
+    // search-as-you-type feature
+    $('#name').on('input', e => {
+        clearTimeout(timer);
+        timer = setTimeout(() => $(e.target.form).submit(), 50);
+    });
+
+    // Event listener for Add to Cart buttons
+    $('.cart').on('click', function () {
+        var packageId = $(this).data('package-id');
+
+        // Send AJAX request to add the package to the cart
+        $.ajax({
+            url: '/Package/AddToCart', // Endpoint to handle adding to the cart
+            type: 'POST',
+            data: { packageId: packageId }, // Send the packageId
+            success: function (response) {
+                if (response.success) {
+                    $('.badge').attr('data-badge', response.item_count);
+
+                    Swal.fire({
+                        title: 'Success!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while adding to the cart.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+
+    // sort by radio button
+    $('[name="sort"]').on('input', function() {
+        var sort = $(this).val();
+
+        if (sort == "name" || sort == "validity" || sort == "price-low-to-high") {
+            $('[name="dir"]').val("asc");
+        } else if (sort == "price-high-to-low") {
+            $('[name="dir"]').val("desc");
+        }
+    });
+
+    // category checkbox
+    $('[name="selected_categories"]').on('change', function() {
+        var cat_id = $(this).val();
+
+        if ($(this).prop('checked')) {
+            selected_categories.push(+cat_id);
+        } else {
+            selected_categories = selected_categories.filter(function(category_id) {
+                return category_id != +cat_id;
+            });
+        }
+        console.log(selected_categories);
+        $('[name="service_categories"]').val(JSON.stringify(selected_categories));
+    });
+</script>

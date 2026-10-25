@@ -1,0 +1,128 @@
+﻿@model IEnumerable<Package>
+
+<script>
+    $(document).ready(function() {
+    $('.filtered-itemno').find('text').text('@Model.Count() Packages Found.');
+    });
+</script>
+
+@if (Model.Count() > 0) {
+    <script>
+        var targetContainer = $('#target');
+        targetContainer.removeClass('showcase-card-container2 empty');
+        targetContainer.addClass('showcase-card-container');
+    </script>
+
+    @* <div class="showcase-card-container"> *@
+    @foreach (var package in Model)
+    {
+        <article class="showcase-card">
+            @{
+                var image = package.PackagePhotos
+                                        .Where(pp => pp.Type == 1)
+                                        .Select(pp => pp.Path)
+                                        .FirstOrDefault();
+
+                if (image == null) {
+                    <header class="showcase-thumb">
+                        <img src="/images/package/defaultImage.png" />
+                    </header>
+                } else {
+                    <header class="showcase-thumb">
+                        <img src="/images/package/cover/@image" alt="Package Image" />
+                    </header>
+                }
+            }
+
+            <div class="showcase-card-float ">
+                @{
+                    var buyers = package.OrderPackages.Count();
+                    var isNew = package.Created_datetime.AddDays(7) < DateTime.Now;
+
+                    if (buyers > 50) {
+                        <span class="toprightlabel">Hot Sales</span>
+                    } else if (isNew) {
+                        <span class="toprightlabel">New</span>
+                    }
+                }
+            </div>
+            <div class="showcase-content bg1">
+                @* <div class="showcase-category"><a href="#">Facial Treatment</a></div> *@
+                <h3 class="showcase-title"><a href="/Package/Detail/@package.Id">@package.Name</a></h3>
+                <div class="showcase-subtitle bg1">
+                    @{
+                        var data_sum = 0;
+                        var data_average = 0.0;
+
+                        if (package.OrderPackages.Any())
+                        {
+                            foreach (var op in package.OrderPackages)
+                            {
+                                if (op.OrderPackageTreatments.Any())
+                                {
+                                    foreach (var opt in op.OrderPackageTreatments)
+                                    {
+                                        if (opt.Appointment != null && opt.Appointment.AppointmentReviews.Any())
+                                        {
+                                            var averageStar = package.OrderPackages
+                                            .SelectMany(op => op.OrderPackageTreatments)
+                                            .Where(op => op.Appointment != null)
+                                            .SelectMany(opt => opt.Appointment.AppointmentReviews)
+                                            .Average(ar => (double?)ar.Star);
+
+                                            data_sum = opt.Appointment.AppointmentReviews.Count();
+                                            data_average = averageStar ?? 0.0;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @if (data_sum > 0 && data_sum > 0) {
+                        <div class="showcase-ratings" data-sum="@data_sum" data-average="@data_average" data-show-details="true">
+                            <!-- Placeholder for ratings to be dynamically filled -->
+                        </div>
+                    } else {
+                        <i class="bi bi-star text-muted">No rating</i>
+                    }
+                </div>
+                <p class="showcase-description">@package.Description</p>
+                </div>
+                <footer class="showcase-footer" style="padding:0; border:0; box-shadow:none; width:auto;">
+
+                    <div class="showcase-price">
+                        <span class="currency">RM</span>
+                        <span class="amount">@package.Price</span>
+                    </div>
+
+                    <button type="button" data-get="/Package/Detail/@package.Id" class="view-details">View Details</button>
+                    @* <button class="buy-now">Buy Now</button> *@
+                    <button class="cart" data-package-id="@package.Id" type="button">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-tooltip">Add To Cart</span>
+                    </button>
+
+                </footer>
+            </article>
+
+        }
+    @* </div> *@
+
+    <!-- end of card container -->
+} else {
+    <!-- No results found -->
+    @* <div class="showcase-card-container2 empty"> *@
+        <div class="empty-icon">
+            <i class="icon icon-stop"></i>
+        </div>
+        <p class="empty-title h5">No results found</p>
+        <p class="empty-subtitle">Please try a different search term or check back later...</p>
+    @* </div> *@
+
+    <script>
+        var targetContainer = $('#target');
+        targetContainer.removeClass('showcase-card-container');
+        targetContainer.addClass('showcase-card-container2 empty');
+    </script>
+}

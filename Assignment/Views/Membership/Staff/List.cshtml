@@ -1,0 +1,158 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Membership | List";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Membership", "/Membership/List"),
+		new KeyValuePair<string, string>("List", null)
+	};
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+
+					<label for="min_expense">Min Expense: </label>
+					<div class="uk-flex uk-flex-between uk-flex-middle uk-width-1-1">
+						<div class="uk-width-expand">
+							@Html.TextBox("min_expenseStart", null, new { @type = "number", @class = "uk-width-1-1", @min = "0.01", @step = "0.01", placeholder = "Start amount for filter min top up range", @uk_tooltip = "title: Start amount for filter min top up range; pos: top-left;" })
+						</div>
+						<div class="uk-margin-small-left uk-margin-small-right uk-flex uk-flex-middle">
+							-
+						</div>
+						<div class="uk-width-expand">
+							@Html.TextBox("min_expenseEnd", null, new { @type = "number", @class = "uk-width-1-1", @min = "0.01", @step = "0.01", placeholder = "End amount for filter min top up range", @uk_tooltip = "title: End range for filter min top up range; pos: top-left;" })
+						</div>
+
+					</div>
+
+					<label for="discount_rate">Discount Rate: </label>
+					<div class="uk-flex uk-flex-between uk-flex-middle uk-width-1-1">
+						<div class="uk-width-expand">
+							@Html.TextBox("discount_rateStart", null, new { @type = "number", @class = "uk-width-1-1", @min = "0.01", @max = "1", @step = "0.01", placeholder = "Start amount for filter discount rate range", @uk_tooltip = "title: Start amount for filter discount rate range; pos: top-left;" })
+						</div>
+						<div class="uk-margin-small-left uk-margin-small-right uk-flex uk-flex-middle">
+							-
+						</div>
+						<div class="uk-width-expand">
+							@Html.TextBox("discount_rateEnd", null, new { @type = "number", @class = "uk-width-1-1", @min = "0.01", @max = "1", @step = "0.01", placeholder = "End amount for filter discount rate range", @uk_tooltip = "title: End amount for filter discount rate range; pos: top-left;" })
+						</div>
+
+					</div>
+
+					<label for="level">Level: </label>
+					@Html.DropDownList("level", ViewBag.LevelList, null, new { id = "level", @class = "select2" })
+
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	@if (Helpers.isManager())
+	{
+		<div class="card-button-right">
+
+			<button type="button" id="deactivate-checked" class="remove b_remove">Delete Checked</button>
+			<button type="button" data-get="/Membership/Create" id="b_create">Create Membership Level</button>
+		</div>
+	}
+
+</form>
+
+<div id="target">
+	<partial name="Staff/_List">
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		$('#min_expenseStart, #min_expenseEnd, #discount_rateStart, #discount_rateEnd').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 10);
+		});
+
+		$('#filter_pageitems, #level').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+
+
+		// Single deactivate
+		$(document).on('click', '.deactivate-btn', function (e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Deactivate Room",
+				html: 'Do you confirm to deactivate this membership level? <br><br><small>* The membership level cannot be activate back after deactivated.</small>',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = '/Membership/Deactivate/' + id;  // Construct the URL dynamically using the ID
+					const f = $('<form>').appendTo(document.body)[0];
+					f.method = 'post';
+					f.action = url;
+					f.submit();
+				}
+			});
+		});
+
+
+		// Batch deactivate
+		$('#deactivate-checked').on('click', function () {
+			const selectedIds = $('input[name="ids"]:checked')
+			.map(function () { return this.value; })
+			.get();
+
+			if (selectedIds.length === 0) {
+				Swal.fire('No items selected', 'Please select at least one item to delete.', 'warning');
+				return;
+			}
+
+			Swal.fire({
+				title: 'Delete Selected Items?',
+				html: `Do you confirm to deactivate ${selectedIds.length} membership level? <br><br><small>* The membership level(s) cannot be activate back after deactivated.</small>`,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Yes',
+				cancelButtonText: 'Cancel'
+			}).then(result => {
+				if (result.isConfirmed) {
+				   const url = '/Membership/DeactivateMany/'; // Endpoint URL
+					const form = $('<form>').appendTo(document.body)[0];
+					form.method = 'post';
+					form.action = url;
+
+					// Add selected IDs as hidden inputs
+					selectedIds.forEach(id => {
+						const input = $('<input>')
+							.attr('type', 'hidden')
+							.attr('name', 'ids')
+							.val(id)[0];
+						form.appendChild(input);
+					});
+
+					form.submit(); // Submit the form
+				}
+			});
+		});
+
+
+	</script>
+}

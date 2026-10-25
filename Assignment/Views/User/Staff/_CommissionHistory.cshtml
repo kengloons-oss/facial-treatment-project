@@ -1,0 +1,90 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<CommissionHistoryDetail>
+
+@{
+	string[] fields = ["Appointment ID", "Service", "Commission (RM)", "Commission Balance (RM)", "Received Date"];
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+	@Model.Count() of @Model.TotalItemCount record(s) &nbsp;&nbsp;| &nbsp;
+	Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+	<thead>
+		<tr>
+			@foreach (var f in fields)
+			{
+				string dir = "asc";
+				string sort = "";
+				string sort_icon = "asc";
+
+				if (f == ViewBag.Sort)
+				{
+					dir = ViewBag.Dir == "desc" ? "asc" : "desc";
+					sort = ViewBag.Dir;
+					sort_icon = dir == "asc" ? "fa-sort-up" : "fa-sort-down";
+				}
+
+				<th class="table_headers">
+					<a data-ajax="true"
+					   data-ajax-update="#target"
+					   data-ajax-loading="#loader"
+					   href="?start_date=@ViewBag.StartDate&end_date=@ViewBag.EndtDate&sort=@f&dir=@dir&page_items=@ViewBag.Page_items&page=@Model.PageNumber" class="@sort">
+						@f<i class='fas @sort_icon'></i>
+					</a>
+				</th>
+			}
+		</tr>
+	</thead>
+	
+	<tbody>
+		@if (Model.Count <= 0)
+		{
+			<tr>
+				<td colspan="6">No available commission history ~</td>
+			</tr>
+		}
+		else
+		{
+			@foreach (var s in Model)
+			{
+				<tr>
+					<td>@Helpers.FormatId("AP", @s.AppointmentId)</td>
+					<td>@s.OrderServiceName</td>
+					<td>@s.CommissionAmount</td>
+					<td>@s.CommissionBalance</td>
+					<td>@Helpers.FormatDateTime(s.CommissionDate)</td>
+				</tr>
+			}
+		}
+	</tbody>
+</table>
+
+<nav class="admin-pager">
+	@{
+		var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+		options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+		options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+		options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+		options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+		var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "target",
+				LoadingElementId = "#loader",
+			};
+	}
+
+	@Html.PagedListPager(
+		Model,
+			p => $"?start_date={ViewBag.StartDate}&end_date={ViewBag.EndtDate}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page_items={@ViewBag.Page_items}&page={p}",
+		PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+	)
+</nav>

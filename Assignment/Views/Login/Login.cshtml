@@ -1,0 +1,154 @@
+﻿@using Microsoft.AspNetCore.Http
+@model RegisterVM
+@inject IConfiguration configuration
+@inject IWebHostEnvironment environment
+
+@{
+	Layout = "_LoginLayout";
+	ViewBag.Title = "Login";
+
+	var siteKey = configuration["ReCaptchaSettings:SiteKey"];
+	var recaptchaEnabled = !environment.IsDevelopment()
+		|| configuration.GetValue<bool>("ReCaptchaSettings:Enabled", true);
+
+	string referralId = Helpers.GetStringSessionValue("PendingPersonReferredId") ?? null;
+	Console.Clear();
+	Console.WriteLine($"{referralId}");
+}
+
+@section head {
+	@if (recaptchaEnabled)
+	{
+		<script src="https://www.google.com/recaptcha/api.js" data-badge="inline"></script>
+	}
+	<script>
+		function onSubmit(token) {
+		  document.getElementById("loginForm").submit();
+		}
+
+
+		$(document).ready(function() {
+			var referralId = '@referralId';
+
+			if (referralId) {
+				// Add 'switched' class to the login form
+				$('.login.form-peice').addClass('switched');
+				// Remove 'switched' class from the signup form
+				$('.signup.form-peice').removeClass('switched');
+			}
+		});
+	</script>
+}
+
+<a href="/Home/Home">Home</a>
+<div class="container">
+	<!-- container -->
+	<section id="formHolder">
+		<!-- formHolder -->
+		<div class="row">
+			<!-- row -->
+			<!-- Brand Box -->
+			<div class="brand">
+				<a href="../member/home.php" class="logo">
+					<img src="/images/logo.png" height="64" width="64" alt="logo" style=" border-radius: 100%; padding: .5em;">
+				</a>
+				<div class="heading">
+					<h2>OwO Meow Beauty</h2><p>Your Right Choice></p>
+				</div>
+			</div><!--end of Brand Box -->
+			<!-- Form Box -->
+			<div class="col-sm-6 form ">
+				<!-- Login Form -->
+				<div class="login form-peice ">
+					<form id="loginForm" action="/Login/Login" method="post">
+						<div class="form-group">
+							<label for="loginEmail">Email Address</label>
+							@Html.TextBox("loginEmail", (string)ViewBag.LoginEmail ?? "",
+																new { type = "text", autofocus = "", data_trim = "", @class = "email" })
+							<span class="error"></span>
+						</div>
+
+						<div class="form-group">
+							<label for="loginPassword">Password</label>
+							<span class="forgotPwd"><a href="/Login/EmailResetPwd" uk-tooltip="title:click here to reset passwords by email verification; pos:top-left;">Forgot Password ?</a></span>
+							@Html.TextBox("loginPassword", (string)ViewBag.LoginPassword ?? "",
+																new { type = "password", data_trim = "", @class = "pass" })
+							<span class="error"></span>
+						</div>
+
+						<div class="form-group">
+							<div class="inputradio" style="margin: 2rem 0rem 0rem 0rem;">
+								<div style="margin: 0.1rem 0.3rem 0rem 0rem;">
+									@Html.CheckBox("rememberMe", (bool?)ViewBag.RememberMe ?? false)
+								</div>
+								<div>Remember Me</div>
+							</div>
+						</div>
+
+						<div class="CTA">
+						@if (recaptchaEnabled)
+						{
+							<button class="g-recaptcha" data-sitekey="@siteKey" data-callback='onSubmit' data-action='submit'>Login</button>
+						}
+						else
+						{
+							<button type="submit">Login</button>
+						}
+							<a href="#" class="switch s-new">I'm New</a><br />
+						</div>
+					</form>
+				</div><!-- End Login Form -->
+				<!-- Signup Form -->
+				<div class="signup form-peice switched">
+					<form class="signup-form" action="/Login/Register" method="post">
+						<div asp-validation-summary="ModelOnly"></div>
+
+						<div class="form-group">
+							<label asp-for="Name">Full Name</label>
+							<input asp-for="Name" type="text" class="name" data-trim />
+							<span asp-validation-for="Name" class="error"></span>
+						</div>
+
+						<div class="form-group">
+							<label asp-for="Gender">Gender</label>
+							<div class="inputradio">
+								<div style="margin:0.2rem 0.15rem 0rem 0rem ;"><input type="radio" asp-for="Gender" value="M" id="Person_Gender_Male" name="Gender" id="Gender"></div>
+								<div class="radiotext">Male</div>
+								<div style="margin:0.2rem 0.15rem 0rem 0.2rem ;"><input type="radio" asp-for="Gender" value="F" id="Person_Gender_Female" name="Gender" id="Gender"></div>
+								<div class="radiotext">Female</div>
+							</div>
+							<span asp-validation-for="Gender" class="error"></span>
+						</div>
+
+						<div class="form-group">
+							<label asp-for="Email">Email Address</label>:
+							<input asp-for="Email" type="email" class="email" id="regEmail" data-trim />
+							<span asp-validation-for="Email" class="error"></span>
+						</div>
+
+						<div class="form-group">
+							<label asp-for="Tel_no">Phone Number - <small>Optional</small></label>
+							<input asp-for="Tel_no" type="tel" class="tel_no" data-trim />
+							<span asp-validation-for="Tel_no" class="error"></span>
+						</div>
+						<div class="form-group">
+							<label asp-for="New_password">Password</label>
+							<input asp-for="New_password" type="password" class="pass" id="regPass" data-trim />
+							<span asp-validation-for="New_password" class="error"></span>
+						</div>
+						<div class="form-group">
+							<label asp-for="Password">Confirm Password</label>
+							<input asp-for="Password" type="password" class="passConfirm" data-trim />
+							<span asp-validation-for="Password" class="error"></span>
+						</div>
+						<div class="CTA">
+							<input type="submit" value="Signup Now" id="submit">
+							<a href="#" class="switch s-have">I have an account</a>
+						</div>
+					</form>
+				</div><!-- End Signup Form -->
+
+			</div><!-- Form Box -->
+		</div><!-- row -->
+	</section><!-- formHolder -->
+</div><!-- formHolder -->

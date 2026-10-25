@@ -1,0 +1,128 @@
+﻿@{
+    Layout = "_HomeLayout";
+    ViewBag.Title = "Home";
+    
+}
+
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); 
+        grid-template-rows: repeat(2, 1fr); 
+        gap: 20px; 
+        margin: 5% 5% 5% 5%;
+    }
+
+    .grid-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+        .grid-item img {
+            width: 100%; 
+            max-width: 800px; 
+            height: auto; 
+        }
+
+    .conbox0{
+        margin: 5% 5% 0% 0%;
+    }
+
+    #section3{
+        padding: 2% 2% 2% 2%;
+    }
+</style>
+
+<nav id="sectionnav">
+    <a href="#section1">MEOW</a>
+    <a href="#section2">OUR PRODUCT</a>
+    <a href="#section3">ABOUT US</a>
+    <div class="active-line"></div> <!-- active line -->
+</nav>
+
+<div id="section1" class="hp-section">
+    <div class="s1container">
+        <div class="left">
+            <img src="../../images/home/catbg2.jpg" width="100%" height="100%" alt="Thumbnail Image">
+            <video src="../../images/home/catmotion.mp4" width="100%" height="100%" autoplay loop muted></video>
+            <!--<img src="../../images/home/catbg2.jpg" alt="" width="100%" height="102.5%">-->
+        </div>
+        <div class="right">
+            <div class="box1"><img src="../../images/home/logo.png"><br><div class="words">· OwO ·</div></div>
+            <div class="box2" >
+                <b>Bringing Meow-gic to Life</b><div class="box2con" >
+                    Explore our range of cat-inspired products, from art to accessories. Whether you're a cat lover or just appreciate their charm, there's something for everyone here.
+                    <br>Let the spirit of cats brighten your day with OwO Meow Art Gallery.
+                    <br><br>Sign in/ Login now to let us bring the magic of cats into your life!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="section2" class="hp-section">
+    <div id="homecarousel">
+        <div id="carousel">
+            <div class="hideLeft">
+                <img src="/images/package/cover/@Model[5].PhotoUrl" alt="">
+            </div>
+            <div class="prevLeftSecond">
+                <img src="/images/package/cover/@Model[3].PhotoUrl" alt="">
+            </div>
+            <div class="prev">
+                <img src="/images/package/cover/@Model[1].PhotoUrl" alt="">
+            </div>
+            <div class="selected">
+                <img src="/images/package/cover/@Model[0].PhotoUrl" alt="">
+            </div>
+            <div class="next">
+                <img src="/images/package/cover/@Model[2].PhotoUrl" alt="">
+            </div>
+            <div class="nextRightSecond">
+                <img src="/images/package/cover/@Model[4].PhotoUrl" alt="">
+            </div>
+            <div class="hideRight">
+                <img src="/images/package/cover/@Model[6].PhotoUrl" alt="">
+            </div>
+        </div>
+    </div>
+
+    <div class="prevbtn"><button id="prev"><i class="fa-solid fa-angle-left"></i></button></div>
+    <div class="nextbtn"><button id="next"><i class="fa-solid fa-angle-right"></i></button></div>
+
+    <div class="shopnowbtn-container">
+        <a href="/Package/List" class="shopnowbtn">
+            Shop Now&nbsp;&nbsp;<i class="fa-solid fa-caret-right"></i>
+        </a>
+    </div>
+</div>
+
+
+<div id="section3" class="hp-section container">
+    <div class="columns">
+        <!-- Left Side: Custom Grid -->
+        <div class="column col-6">
+            <div class="grid-container">
+                <div class="grid-item"><img src="../../images/home/lef.png" alt="Image 1"></div>
+                <div class="grid-item"><img src="../../images/home/cen.png" alt="Image 2"></div>
+                <div class="grid-item"><img src="../../images/home/dow.png" alt="Image 3"></div>
+                <div class="grid-item"><img src="../../images/home/rig.png" alt="Image 4"></div>
+            </div>
+        </div>
+
+        <!-- Right Side: Text Content -->
+        <div class="column col-6 ">
+            <div class="conbox0" style="font-size: 1rem;">
+                <p>Welcome to OwO Meow Art Gallery, a Malaysian local art space founded by four IT students from TARUMT. Our passion for feline art inspired us to create a platform dedicated to celebrating the beauty and charm of cats through various artistic expressions.</p>
+                <p>At OwO Meow Art Gallery, we believe in the power of art to uplift, inspire, and heal. Our mission is to spread joy and positivity through the enchanting world of cat-themed art. Whether you're a dedicated cat lover or simply appreciate the beauty of art, we invite you to join us on this delightful journey.</p>
+                <p>We welcome artists, enthusiasts, and anyone who shares our passion for feline-inspired creativity to join our community. Together, let's harness the healing power of art and let the spirit of the cat inspire and enchant us all.</p>
+                <p>If you're interested in collaborating with us or showcasing your work at OwO Meow Art Gallery, please feel free to reach out to us at owomeowartgallery0101@gmail.com. We look forward to hearing from you!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

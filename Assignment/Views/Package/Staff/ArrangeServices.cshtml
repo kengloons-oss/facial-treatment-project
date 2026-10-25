@@ -1,0 +1,518 @@
+﻿@model List<Service>
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Package | Create";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Package", "/Package/List"),
+		new KeyValuePair<string, string>("Create Package", null)
+	};
+
+	var services = Json.Serialize(ViewBag.Services);
+	var allServices = Json.Serialize(ViewBag.Service_select_list);
+
+	var treatmentDuration = 0.00;
+
+	foreach (var service in Model)
+	{
+		treatmentDuration += service.Duration;
+	}
+}
+
+@* <button data-get="/Package/Staff/Create">Back</button> *@
+@* <br /><br /> *@
+
+@* <ul class="step"> *@
+@* 	<li class="step-item"> *@
+@* 		<a href="#" class="tooltip" data-tooltip="Step 1"> *@
+@* 			Upload Images & Input Package Details *@
+@* 		</a> *@
+@* 	</li> *@
+@* 	<li class="step-item active"> *@
+@* 		<a href="#" class="tooltip" data-tooltip="Step 2">Arrange Service Sequence Between Treatments</a> *@
+@* 	</li> *@
+@* </ul> *@
+
+<form method="post" class="create-package-form">
+	<div class="container card " style="padding-bottom: 25px; margin: 0.8rem 0rem 4rem 0rem;">
+
+		<div class="card-header">
+			<div class="card-title h5">
+				<!-- Back Button -->
+				<button id="back-btn" class="topleft-back" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+				<!-- Page Title -->
+				Create New Package
+			</div>
+		</div>
+
+		<!-- Step Bar -->
+		<div class="container admin-stepbar">
+			<div class="column col-12">
+				<ul class="step">
+					<li class="step-item ">
+						<a class="tooltip create-progress" data-tooltip="Step 1">
+							Upload Images & Input Package Details
+						</a>
+					</li>
+					<li class="step-item active">
+						<a class="tooltip create-progress" data-tooltip="Step 2">Arrange Service Sequence Between Treatments</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		@* treatment and service arrangment section *@
+		<div class="columns">
+			<div class="card-body" style="padding:20px;">
+				<div class="treatment-container">
+					@for (int i = 0; i < ViewBag.Treatment; i++)
+					{
+						// treatment container
+						<div class="treatment" data-treatment="@(i + 1)" >
+							<label class="treatmenttitlenum"><b>Treatment @(i + 1)&nbsp;-&nbsp;</b></label>
+							<small>Total duration: <b class="duration-label">@treatmentDuration</b> H </small>
+
+							@* treatment services sequence *@
+							<div class="service-container">
+								@for (int j = 0; j < Model.Count(); j++)
+								{
+									<div class="service container" data-sequence="@(j + 1)" data-id="@Model[j].Id" data-duration="@Model[j].Duration">
+										<div class="columns">
+											<div class="column col-10">
+												<label><span class="sequence-label">@(j + 1).</span> @Model[j].Name - @Model[j].Duration h </label>
+											</div>
+											<div class="column col-2 text-right">
+												<button class="remove-service"><i class="fa-regular fa-circle-xmark"></i></button>
+											</div>
+										</div>
+									</div>
+								}
+							</div>
+
+							@* remaining available service *@
+							<div class="service-select-container">
+									<small><b>Applicable services: </b></small>	
+									<select class="remaining-services-select form-select input-sm">
+										<option value="" selected disabled>-</option>
+									</select>
+							</div>
+						</div>
+						<br />
+					}
+				</div>
+			</div>
+		</div>
+
+		@* reset & submit button *@
+		<div class="text-right">
+			<button type="reset" class="btn btn-secondary">Reset</button>
+			<button type="submit" class="btn btn-primary">Create</button>
+		</div>
+	</div>
+</form>
+
+@section foot {
+<script>
+	var allServices = @Html.Raw(allServices);
+	var treatmentSequenceArray = [];
+
+	$(document).ready(function () {
+		// get treatment sequence array
+		$('[data-treatment]').each(function () {
+			let treatmentId = $(this).data('treatment');
+			let services = [];
+
+			// Iterate through each service within the treatment
+			$(this).find('[data-sequence]').each(function () {
+				let sequence = $(this).data('sequence');
+				let serviceId = $(this).data('id');
+
+				services.push({
+					sequence: sequence,
+					id: serviceId
+				});
+			});
+
+			treatmentSequenceArray.push({
+				treatment: treatmentId,
+				services: services
+			});
+		});
+
+		// Append remaining available services
+		allServices.forEach(service => {
+			var filterServices = treatmentSequenceArray[0].services;
+
+			// Check if the service is in the filterServices array
+			var isAppend = !filterServices.some(filterService => service.value == filterService.id);
+
+			if (isAppend) {
+				var durationMatch = service.text.match(/(\d+(\.\d+)?)\s* h/);
+				var duration = durationMatch ? parseFloat(durationMatch[1]) : null;
+
+				$('.remaining-services-select').append(
+					$('<option>', {
+						value: service.value,
+						text: service.text,
+						'data-duration': duration
+					})
+				);
+			}
+		});
+	});
+
+	// remove treatment service
+	$(document).on('click', '.remove-service', function(e) {
+		e.preventDefault();
+
+		var serviceDiv = $(this).closest('.service');
+		var treatmentDiv = $(this).closest('.treatment');
+		var treatment = treatmentDiv.data('treatment');
+		var sequence = serviceDiv.data('sequence');
+		var durationLabel = $(this).closest('.treatment').find('.duration-label');
+		var durationLabelValue = parseFloat(durationLabel.text());
+		var id = serviceDiv.data('id');
+		var name = serviceDiv.find('label').clone().children().remove().end().text().trim();
+		var duration = serviceDiv.data('duration');
+
+		serviceDiv.remove();
+
+		treatmentSequenceArray[treatment - 1].services = treatmentSequenceArray[treatment - 1].services.filter(function (service) {
+			return service.id !== id;
+		});
+
+		treatmentDiv.find('.service').each(function (index) {
+			var newSequence = index + 1;
+			$(this).data('sequence', newSequence); // Update the data attribute in the DOM
+			$(this).attr('data-sequence', newSequence); // Update the actual DOM attribute
+			$(this).find('.sequence-label').text(newSequence + '.');
+
+			// update the sequence in the treatmentSequenceArray
+			var serviceId = $(this).data('id');
+			if (treatmentSequenceArray[treatment]) {
+				var service = treatmentSequenceArray[treatment - 1].services.find(function (s) {
+					return s.id === serviceId;
+				});
+				if (service) {
+					service.sequence = newSequence;
+				}
+			}
+		});
+
+		// add removed option into select list
+		var selectElement = treatmentDiv.find('.service-select-container select');
+
+		selectElement.append(
+			// $('<option></option>').val(id).text(name) Add the removed service as an option
+			$('<option>', {
+				value: id,        // Set the value attribute
+				text: name,       // Set the visible text
+				'data-duration': duration // Add custom attribute (e.g., data-duration)
+			})
+		);
+
+		// update duration label
+		durationLabelValue -= duration;
+		durationLabel.text(durationLabelValue);
+	});
+
+	// submit form
+	$('button[type="submit"]').click(function(e) {
+		e.preventDefault();
+
+		var treatmentSequence = [];
+
+		treatmentSequenceArray.forEach((treatment) => {
+			var serviceArr = [];
+
+			treatment.services.forEach((service) => {
+				serviceArr.push(service.id);
+			});
+			treatmentSequence.push(serviceArr);
+		});
+
+		// Check for duplicates services in each treatment
+		treatmentSequence.forEach((arr, index) => {
+			const uniqueIds = new Set(arr);
+			if (uniqueIds.size !== arr.length) {
+				Swal.fire({
+					title: 'Duplicate Service in Treatment',
+					text: `There is a duplicate service found in Treatment ${index + 1}, please remove it.`,
+					icon: 'error',
+					showDenyButton: false,
+					showCancelButton: false,
+					confirmButtonText: "OK"
+				})
+				return;
+			}
+		});
+
+		$.ajax({
+			url: '/Package/Staff/CreatePackage2',
+			type: 'POST',
+			data: {
+				treatmentSequence: JSON.stringify(treatmentSequence),
+			},
+			success: function(response) {
+				if (response.result) {
+					Swal.fire({
+						title: response.success_title,
+						text: response.success_msg,
+						icon: 'success',
+						showDenyButton: false,
+						showCancelButton: false,
+						confirmButtonText: "OK"
+					}).then((result) => {
+						if (result.isConfirmed) {
+							window.location.href = "/Package/Staff/List";
+						}
+					});
+				} else {
+					Swal.fire({
+						title: response.error_title,
+						text: response.error_msg,
+						icon: 'error',
+						showDenyButton: false,
+						showCancelButton: false,
+						confirmButtonText: "OK"
+					});
+				}
+			},
+			error: function (xhr, status, error) {
+				console.log('Error:', error);
+				console.log(xhr.responseText);
+			}
+		})
+	});
+
+	// reset form
+	$('button[type="reset"]').click(function(e) {
+		e.preventDefault();
+		location.reload();
+	});
+
+	// DRAG BOARDS
+	$(document).ready(function () {
+		var allServices = {};
+
+		function initializeServices() {
+			allServices = {}; // 重置服务映射
+			$('.service').each(function () {
+				const id = $(this).data('id');
+				const treatmentId = $(this).closest('.treatment').data('treatment');
+				if (!allServices[id]) {
+					allServices[id] = [];
+				}
+				if (!allServices[id].includes(treatmentId)) {
+					allServices[id].push(treatmentId);
+				}
+			});
+		}
+
+		function updateSequences() {
+			$('.treatment').each(function () {
+				const $treatment = $(this);
+				const $services = $treatment.find('.service');
+				let totalDuration = 0;
+
+				$services.each(function (index) {
+					$(this).attr('data-sequence', index + 1);
+					$(this).find('.sequence-label').text(`${index + 1}.`);
+					totalDuration += parseFloat($(this).data('duration'));
+				});
+
+				$treatment.find('.duration-label').text(totalDuration.toFixed(2));
+			});
+		}
+
+		$('.service-container').each(function () {
+			const container = this;
+			var beforeDraggedContainer;
+
+			new Sortable(container, {
+				group: 'shared',
+				animation: 150,
+				onMove(evt) {
+					const targetContainer = evt.to;
+					let draggedItemRemoved = false;  // Flag to track removal of the first occurrence
+
+					const currentItems = Array.from(targetContainer.children).filter((child) => {
+						if (!draggedItemRemoved && child === evt.dragged) {
+							draggedItemRemoved = true;  // Only remove the first occurrence
+							return false;  // Exclude this item
+						}
+						return true;  // Include all other items
+					});
+
+					beforeDraggedContainer = currentItems;
+				},
+				onEnd(evt) {
+					const draggedItem = evt.item;
+					const oldParent = evt.from;
+					const newParent = evt.to;
+					const draggedServiceId = $(draggedItem).data('id');
+					const oldTreatmentId = $(oldParent).closest('.treatment').data('treatment');
+					const newTreatmentId = $(newParent).closest('.treatment').data('treatment');
+
+					if (beforeDraggedContainer) {
+						$(beforeDraggedContainer).each(function () {
+							const existingServiceId = $(this).data('id');
+
+							// Check for duplicate service
+							if (existingServiceId === draggedServiceId) {
+								Swal.fire({
+									title: "Duplicated service",
+									text: "Same service cannot be chosen for 2 times within one treatment.",
+									icon: 'error',
+									confirmButtonText: "OK"
+								});
+
+								// Undo the drag operation if duplicate is found
+								oldParent.insertBefore(draggedItem, oldParent.children[evt.oldIndex]);
+							}
+						});
+
+						// If no duplicate was found, proceed with further logic
+						initializeServices();
+						updateSequences();
+
+						treatmentSequenceArray = [];
+
+						$('[data-treatment]').each(function () {
+							let treatmentId = $(this).data('treatment');
+							let services = [];
+
+							// Iterate through each service within the treatment
+							$(this).find('[data-sequence]').each(function () {
+								let sequence = $(this).data('sequence');
+								let serviceId = $(this).data('id');
+
+								services.push({
+									sequence: sequence,
+									id: serviceId
+								});
+							});
+
+							treatmentSequenceArray.push({
+								treatment: treatmentId,
+								services: services
+							});
+						});
+					}
+				}
+			});
+		});
+
+		$(document).on('click', '.remove-service', function () {
+			const $service = $(this).closest('.service');
+			$service.remove();
+			initializeServices();
+			updateSequences();
+		});
+
+		initializeServices();
+
+		$(document).on('change', '.remaining-services-select', function () {
+			var id = $(this).val();
+			var name = $(this).find(':selected').text();
+			var duration = $(this).find(':selected').data('duration');
+
+			var treatmentDiv = $(this).closest('.treatment');
+			var treatment = treatmentDiv.data('treatment');
+			var serviceContainer = treatmentDiv.find('.service-container');
+
+			var nextSequence = serviceContainer.find('.service').length + 1;
+			var durationLabel = $(this).closest('.treatment').find('.duration-label');
+			var durationLabelValue = parseFloat(durationLabel.text());
+
+			if (durationLabelValue + duration > 6) {
+				Swal.fire({
+					title: "Maximum treatment duration reached",
+					text: "The maximum duration of each treatment cannot more than 6 hours.",
+					icon: 'error',
+					confirmButtonText: "OK"
+				});
+				return;
+			}
+
+			var isDuplicate = false;
+			serviceContainer.find('.service').each(function () {
+				if ($(this).data('id') === id) {
+					isDuplicate = true;
+					return false;
+				}
+			});
+
+			if (isDuplicate) {
+				Swal.fire({
+					title: "Duplicated service",
+					text: "Same service cannot be chosen for 2 times within one treatment.",
+					icon: 'error',
+					confirmButtonText: "OK"
+				});
+				return;
+			}
+
+			var newServiceDiv = `
+				<div class="service container" data-sequence="${nextSequence}" data-id="${id}" data-duration="${duration}">
+					<label><span class="sequence-label">${nextSequence}.</span> ${name}</label>
+					<button class="remove-service"><i class="fa-regular fa-circle-xmark"></i></button>
+				</div>`;
+
+			serviceContainer.append(newServiceDiv);
+			$(this).find(`option[value="${id}"]`).remove();
+			$(this).find(`option[value=""]`).prop("selected", true);
+
+			// push new service into array
+			var treatmentObject = treatmentSequenceArray.find(t => t.treatment === treatment);
+
+			if (treatmentObject) {
+				treatmentObject.services.push({
+					sequence: nextSequence,
+					id: +id
+				});
+			}
+
+			durationLabelValue += duration;
+			durationLabel.text(durationLabelValue);
+
+			initializeServices();
+			updateSequences();
+		});
+	});
+
+
+	// progress bar
+	$('.create-progress').on('click', function(e) {
+		var step = $(this).data('tooltip');
+
+		if (step == "Step 1") {
+			window.location.href = '/Package/Staff/Create';
+		} else if (step == "Step 2") {
+			location.reload();
+		}
+	});
+
+	// back button
+	$('#back-btn').on('click', function(e) {
+		e.preventDefault();
+
+		Swal.fire({
+			title: "Alert!",
+			text: "If you go back and reselect a file in the image upload field"
+					+ ", your previously uploaded image will be replaced."
+					+ "Do you want to continue?",
+			icon: 'warning',
+			showDenyButton: true,
+			showCancelButton: false,
+			confirmButtonText: "Yes, Go Back"
+		}).then((result) => {
+			if (result.isConfirmed) {
+				window.location.href = "/Package/Staff/Create";
+			}
+		});
+	})
+</script>
+}

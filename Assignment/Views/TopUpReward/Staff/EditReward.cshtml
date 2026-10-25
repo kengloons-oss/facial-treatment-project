@@ -1,0 +1,61 @@
+﻿@model TopUpReward
+
+@{
+    Layout = "_StaffLayout";
+    ViewBag.Title = "Top Up Reward | " + Model.Code;
+
+    // breadcrumb data
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Top Up Reward", "/TopUpReward/RewardList"),
+        new KeyValuePair<string, string>("Detail", null)
+    };
+
+}
+
+<form asp-action="Edit" method="post">
+    <div class="container">
+        <div class="columns">
+            <!-- left-side -->
+            <div class="formformat column col-6 col-sm-12 card my-single-card">
+                <div class="card-header">
+                    <div class="card-title h5">
+                        <!-- Back Button -->
+                        <button class="topleft-back" type="button" data-get="/TopUpReward/RewardList" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+                        <!-- Page Title -->
+                        Top Up Reward @Model.Code
+                    </div>
+                </div>
+
+                <div class="card-body my-pagecard-body">
+                    <input type="hidden" asp-for="Id" />
+
+                    <!-- Min_Topup -->
+                    <div class="form-group">
+                        <label asp-for="Min_topup">Minimum Top Up Amount: </label>
+                        <input asp-for="Min_topup" type="number" min="5" max="999999.99" step="0.01" class="form-input min_topup-d" />
+                        <span asp-validation-for="Min_topup" class="form-input-hint error-message"></span>
+                    </div>
+
+                    <!-- Free_credit -->
+                    <div class="form-group">
+                        <label asp-for="Free_credit"></label>
+                        <input asp-for="Free_credit" type="number" min="0.01" max="999999.99" step="0.01" class="form-input free_credit" />
+                        <span asp-validation-for="Free_credit" class="form-input-hint error-message"></span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="form-group text-right">
+                        <br /><br />
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button id="submitButton" type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    let originalMinTopUp = '@(Html.Raw(Model.Min_topup))';
+</script>

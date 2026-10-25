@@ -1,0 +1,108 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Category | List";
+
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Category", "/Category/CategoryList"),
+		new KeyValuePair<string, string>("List", null)
+	};
+}
+
+@section head {
+	<script src="/js/general/adminCategory.js"></script>
+}
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body">
+					<label for="filter_status">Status: </label>
+					@Html.DropDownList("filter_status", Helpers.status_list, new { @class = "form-input" })
+
+					<label for="filter_pageitems">Items Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	@if (Helpers.isManager())
+	{
+		<div class="card-button-right">
+			<button data-get="/Category/CategoryCreate" id="b_create">Create New Category</button>
+		</div>
+	}
+
+	<div class="search-container card-right-tb">
+		<div class="search-bar">
+			@Html.TextBox("name", "",
+							new { type = "search", @class = "search-input", autofocus = "", placeholder = "Search Category Name Here..." })
+			<button id="search-button"><i class="fas fa-search"></i></button>
+		</div>
+	</div>
+</form>
+
+<!-- AJAX generate table content -->
+<div id="target">
+	<partial name="Staff/_CategoryList" />
+</div>
+
+<!-- Modal for selecting deactivated services -->
+<div id="modal-id" class="modal">
+	<a href="#close" class="modal-overlay" aria-label="Close"></a>
+
+	<div class="modal-container">
+		<div class="modal-header">
+			<a href="#" class="btn btn-clear float-right" aria-label="Close"></a>
+			<h3 class="modal-title">Reactivate Service(s) Under This Category :</h3>
+		</div>
+
+		<div class="modal-body">
+			<div id="reactivateservices-box" class="content">
+				<!-- form checkbox control -->
+				<div class="form-group">
+					<label class="form-checkbox">
+						<input type="checkbox" id="selectAllServices">
+						<i class="form-icon"></i> Select All
+					</label>
+				</div>
+
+				<div class="form-group">
+					<label class="form-checkbox">
+						<!-- List of deactivated services -->
+						<div id="serviceList"></div>
+					</label>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal-footer">
+			<button id="confirmServiceSelection" class="btn btn-primary">Activate Category Only</button>
+		</div>
+	</div>
+</div>
+
+
+
+@section foot {
+	<script>
+		let timer = null;
+
+		$('#name').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 100);
+		});
+
+		$('#filter_status, #filter_pageitems').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+
+	</script>
+}

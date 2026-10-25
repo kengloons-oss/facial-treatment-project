@@ -1,0 +1,133 @@
+﻿@{
+    ViewBag.Title = "Home | Scan QR";
+
+    // breadcrumb data
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Home", "/Home/Home"),
+        new KeyValuePair<string, string>("Scan QR", null)
+    };
+}
+
+<div class="container">
+    <div class="columns">
+        <!-- left-side -->
+        <div class="formformat column col-6 col-sm-12 card my-single-card">
+            <div class="card-header">
+                <div class="card-title h5">
+                    <!-- Back Button -->
+                    <button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+                    <!-- Page Title -->
+                    Scan QR
+                </div>
+            </div>
+
+            <div class="card-body my-pagecard-body">
+                <!-- This is where the video feed for QR scanner will be displayed -->
+                <div id="scanner-container" style="width: 100%; height: 500px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+
+<script>
+    const video = document.createElement("video");
+    let stream = null;
+
+    // Function to start the scanner
+    async function startScanner() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream; // Set the video source
+            video.setAttribute("playsinline", true);
+            document.querySelector("#scanner-container").appendChild(video); // Append video element
+            await video.play(); // Start the video stream
+            requestAnimationFrame(scanQRCode); // Start scanning for QR codes
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+
+            // Show error message
+            Swal.fire({
+                title: "Camera Access Error",
+                text: "Unable to access the camera. Please check permissions or try refreshing the page.",
+                icon: 'error',
+                confirmButtonText: "OK"
+            });
+        }
+    }
+
+    // Function to scan QR codes from the video feed
+    function scanQRCode() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height); // Scan for QR code
+
+            if (code) {
+                console.log("QR Code detected:", code.data);
+                stopScanner(); // Stop the scanner
+                processQRCode(code.data); // Process the QR code value
+                return;
+            }
+        }
+        requestAnimationFrame(scanQRCode); // Continue scanning
+    }
+
+    // Function to stop the video and camera stream
+    function stopScanner() {
+        if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop()); // Stop each track
+        }
+        video.pause();
+        video.srcObject = null;
+        if (video.parentElement) {
+            video.parentElement.removeChild(video);
+        }
+    }
+
+    // Function to validate and process the QR code
+    function processQRCode(qrData) {
+        console.log(qrData);
+
+        if (!qrData || typeof qrData !== "string" || !isValidURL(qrData)) {
+            // Show error message if the QR code is invalid
+            Swal.fire({
+                title: "Invalid QR Code",
+                text: "The scanned QR code is not a valid link. Please try again.",
+                icon: 'error',
+                confirmButtonText: "OK"
+            }).then(() => {
+                startScanner(); // Restart the scanner
+            });
+            return;
+        }
+
+        // Redirect to the QR code link
+        window.location.href = qrData;
+    }
+
+    // Utility function to validate URLs
+    function isValidURL(string) {
+        try {
+            const url = new URL(string); // This will throw an error if the string is not a valid URL
+            return url.protocol === "http:" || url.protocol === "https:"; // Ensure the protocol is http or https
+        } catch (err) {
+            return false;
+        }
+    }
+
+
+    // Initialize scanner on page load
+    $(document).ready(() => {
+        startScanner();
+    });
+</script>
+

@@ -1,0 +1,117 @@
+.header-con2 {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.main-search-container {
+    width: 100%;
+    position: relative;
+}
+
+.main-search-bar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border-radius: 5px;
+    position: relative;
+}
+
+#main-search-input {
+    width: 100%;
+    padding: 8px 40px 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#main-search-button {
+    position: absolute;
+    right: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.suggest-container {
+    position: absolute;
+    top: calc(100% + 0.7em);
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: black;
+    z-index: 100;
+}
+
+.suggestcol-2 {
+    display: flex;
+    flex-direction: column;
+    padding: 0.7em;
+}
+
+  .suggestcol-2 {
+    justify-content: flex-start;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    max-width: 100%;
+    background-color: #fff;
+    padding: .7em;
+    border: 1px solid #ccc;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: black;
+  }
+  .suggestcol-2 img {
+    max-width: 20%;
+    height: auto;
+  }
+  .suggestion-item {
+    padding-block: .4em;
+    border-bottom: 1px solid #ccc;
+  }
+  .suggestion-item:first-child {
+    padding-top: 0em;
+  }
+  .suggestion-item:last-child {
+    padding-bottom: 0em;
+    border-bottom: none;
+  }
+  .product-container {
+    padding: .2em;
+    transition: .15s border;
+    display: flex; 
+    align-items: center; 
+    border: 1px solid transparent;
+    border-radius: .3em;
+  }
+  .product-container:hover {
+    border: 1px solid var(--gray);
+  }
+  .product.container > img {
+    display: flex;
+    align-items: center;
+  }
+  .product-info {
+    margin-left: 10px; 
+  }
+  .product-info h4 {
+    margin: 0; 
+  }
+  .product-info p {
+    margin: 5px 0 0; 
+  }
+  
+  .hide {
+    display: none;
+  }
+  .show {
+    display: block;
+  }
+  .showflex {
+    display: flex;
+  }

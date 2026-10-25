@@ -1,0 +1,124 @@
+﻿@{
+    Layout = "_MemberLayout";
+    ViewBag.Title = "Review | List";
+
+    // breadcrumb data
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Review", "/Review/List"),
+        new KeyValuePair<string, string>("List", null)
+    };
+}
+
+<form data-ajax="true"
+      data-ajax-update="#target"
+      data-ajax-loading="#loader"
+      id="f">
+      <div class="container-filter">
+          <div class="half">
+              <div class="card card-blue-shadow">
+                  <div class="card-txtfield card-body">
+
+                    <!-- Appointment Date Range -->
+                    <label>Appointment Date Time Range: </label>
+                    <div class="uk-flex uk-flex-between uk-flex-middle uk-width-1-1">
+                        <div class="uk-width-expand">
+                            <input type="datetime-local" id="filter_start_datetime" name="start_datetime" class="uk-width-1-1" uk_tooltip="title: Start date time for filtering appointment date time range; pos: top-left;" />
+                        </div>
+                        <div class="uk-margin-small-left uk-margin-small-right uk-flex uk-flex-middle">
+                            -
+                        </div>
+                        <div class="uk-width-expand">
+                            <input type="datetime-local" id="filter_end_datetime" name="end_datetime" class="uk-width-1-1" uk_tooltip="title: End date time for filtering appointment date time range; pos: top-left;" />
+                        </div>
+                        <span class="error"></span>
+                    </div>
+                    
+                    <!-- Review Number Range -->
+                    <label>Review Number Range: </label>
+                    <div class="uk-flex uk-flex-between uk-flex-middle uk-width-1-1">
+                        <div class="uk-width-expand">
+                            <input type="number" id="filter_min_review" name="min_review" step="1" min="1" max="999" placeholder="Min Review" class="uk-width-1-1" uk_tooltip="title: Minimum review number for filtering appointment review number range; pos: top-left;" />
+                        </div>
+                        <div class="uk-margin-small-left uk-margin-small-right uk-flex uk-flex-middle">
+                            -
+                        </div>
+                        <div class="uk-width-expand">
+                            <input type="number" id="filter_max_review" name="max_review" step="1" min="1" max="999" placeholder="Max Review" class="uk-width-1-1" uk_tooltip="title: Maximum review number for filtering appointment review number range; pos: top-left;" />
+                        </div>
+                        <span class="error"></span>
+                    </div>
+
+                    <!-- Item Per Page -->
+                    <label for="filter_page_items">Item Per Page: </label>
+                    @Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_page_items" })
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="search-container card-right-tb">
+          <div class="search-bar">
+            @Html.TextBox("title", "", new { type = "search", autofocus = "", id = "search", data_trim = "", placeholder = "Search Appointment Title...", @class = "search-input" })
+            <button id="search-button"><i class="fas fa-search"></i></button>
+          </div>
+      </div>
+</form>
+
+<div id="target">
+    <partial name="Member/_ReviewList" />
+</div>
+
+@section foot {
+    <script>
+        // search-as-you-type feature
+        let timer = null;
+
+        $('#search').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 100);
+        });
+
+        // trigger update
+        $('#filter_start_datetime, #filter_end_datetime, #filter_page_items').on('change', function(e) {
+            console.log("trigger");
+            $(e.target.form).submit();
+        });
+
+        $('#filter_min_review, #filter_max_review').on('input', function(e) {
+            $(e.target.form).submit();
+        });
+
+        // validate appointment datetime range
+        $('#filter_start_datetime, #filter_end_datetime').on('change', function(e) {
+            const start = $('#filter_start_datetime').val();
+            const end = $('#filter_end_datetime').val();
+
+            if (start && end) { // Ensure both fields have values
+                if (new Date(start) > new Date(end)) {
+                    $(this).siblings('.error').text('Start Datetime must not more than End Datetime.');
+                } else {
+                    $(this).siblings('.error').text('');
+                }
+            } else {
+                    $(this).siblings('.error').text('');
+            }
+        });
+
+        // validate review number range
+        $('#filter_min_review, #filter_max_review').on('input', function(e) {
+            const min = $('#filter_min_review').val();
+            const max = $('#filter_max_review').val();
+
+            if (min && max) {
+                if (min > max) {
+                    $(this).siblings('.error').text('Min Review must not more than Max Review.');
+                } else {
+                    $(this).siblings('.error').text('');
+                }
+            } else {
+                $(this).siblings('.error').text('');
+            }
+        });
+    </script>
+}

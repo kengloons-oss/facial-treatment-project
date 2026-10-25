@@ -1,0 +1,441 @@
+﻿@model AppointmentVM
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Appointment | Create (Working)";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Appointment", "/Appointment/FullCalendar"),
+		new KeyValuePair<string, string>("Create (Working)", null)
+	};
+
+	string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
+}
+
+<style>
+	.end-timeshowing input {
+		padding: 0.1rem 0rem 0rem 0rem;
+		background: transparent;
+		color: dimgray;
+	}
+</style>
+
+<form id="dynamicForm" method="post" class="">
+	<div class="container">
+		<div class="columns">
+			<!-- left-side -->
+			<div class="formformat column col-6 col-sm-12 card my-single-card">
+
+				<div class="card-header">
+					<div class="card-title h5">
+						<!-- Back Button -->
+						<button class="topleft-back" type="button" data-get="/Appointment/FullCalendar" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+						<!-- Page Title -->
+						Create Working Appointment
+					</div>
+				</div>
+
+				<div class="card-body my-pagecard-body">
+					<!-- Member Selection -->
+					<div class="form-group">
+						<label for="MemberId" class="form-label">Member: </label>
+						@Html.DropDownList("MemberId", (IEnumerable<SelectListItem>)ViewBag.MemberList, "Choose a member", new { @class = "form-input select2 MemberId" })
+						<span asp-validation-for="MemberId" class="form-input-hint error-message"></span>
+					</div>
+
+					<!-- Package Selection -->
+					<div class="form-group">
+						<label for="PackageId" class="form-label">Package: </label>
+						<select id="PackageId" name="PackageId" class="form-input select2" disabled>
+							<option value="" selected disabled>Select a package</option>
+							<!-- Will be populated dynamically -->
+						</select>
+						<span asp-validation-for="PackageId" class="form-input-hint error-message"></span>
+					</div>
+
+					<!-- Staff Selection -->
+					<div class="form-group">
+						<label for="StaffId" class="form-label">Staff: </label>
+						<select id="StaffId" name="StaffId" class="form-input select2 StaffId" disabled>
+							<option value="" selected disabled>Select a staff</option>
+							<!-- Will be populated dynamically -->
+						</select>
+						<span asp-validation-for="StaffId" class="form-input-hint error-message"></span>
+					</div>
+
+					<!-- Date Selection -->
+					<div class="form-group">
+						<label for="AppointmentDate" class="form-label">Appointment Date: </label>
+						<div class="uk-inline" style="width:100%;">
+							<a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: calendar"></a>
+							<input id="AppointmentDate" name="AppointmentDate" class="form-input AppointmentDate uk-input" type="text" placeholder="Select Appointment Date..." aria-label="Clickable icon" disabled />
+						</div>
+						<span asp-validation-for="AppointmentDate" class="form-input-hint error-message"></span>
+					</div>
+
+					<!-- Time Selection -->
+					<div class="form-group" id="TimeSelection">
+						<label for="Start_datetime" class="form-label">Appointment Time: </label>
+						<div class="columns">
+							<!-- Start Time -->
+							<div class="column col-6 col-sm-12">
+								<select id="AppointmentTime" name="Start_datetime" class="form-input select2">
+									<option value="">Select Time</option>
+								</select>
+							</div>
+							<!-- Separator -->
+							<div class="column col-1 col-sm-12 text-center">
+								<span>-</span>
+							</div>
+							<!-- End Time -->
+							<div class="column col-5 col-sm-12 text-center">
+								<span class="end-timeshowing"><input type="text" id="EndTime" class="form-input disabled-endtime" readonly /></span>
+							</div>
+						</div>
+						<!-- Error Message -->
+						<small id="TimeError" class="text-danger" style="display: none;">No staff available for the selected time.</small>
+						<span asp-validation-for="Start_datetime" class="form-input-hint error-message"></span>
+						<input type="hidden" id="End_datetime" name="End_datetime" />
+						<span asp-validation-for="End_datetime" class="form-input-hint error-message"></span>
+					</div>
+
+					<!-- Buttons -->
+					<div class="text-right" style="padding-top:16px;">
+						<button type="reset" class="btn btn-secondary">Reset</button>
+						<button id="submitButton" type="submit" class="btn btn-primary">Create</button>
+					</div>
+				</div> <!-- end card-body -->
+			</div> <!-- end left-side -->
+
+		</div>
+	</div>
+</form>
+
+@section foot {
+	<script>
+		$(document).ready(function () {
+			$('#TimeSelection').hide();
+
+			// Get today's date and the date one month from today
+			const currentDate = new Date();
+			const oneMonthFromNow = new Date();
+			oneMonthFromNow.setMonth(currentDate.getMonth() + 1);
+
+			// Format the dates to 'YYYY-MM-DD' format
+			const formatDate = (date) => {
+				const year = date.getFullYear();
+				const month = (date.getMonth() + 1).toString().padStart(2, '0');
+				const day = date.getDate().toString().padStart(2, '0');
+				return `${year}-${month}-${day}`;
+			};
+
+			const currentDateFormatted = formatDate(currentDate);
+			const oneMonthFromNowFormatted = formatDate(oneMonthFromNow);
+
+			// Initialize Flatpickr
+			flatpickr("#AppointmentDate", {
+				minDate: `${currentDateFormatted}`,  // Min date with 10 AM start time
+				maxDate: `${oneMonthFromNowFormatted}`,  // Max date with 10 PM end time
+				dateFormat: "Y-m-d", // Format to 'yyyy-mm-dd'
+				allowInput: false, // Allow manual input
+				noCalendar: false,
+			});
+
+			// Initialize select2
+			$('.select2').select2({
+				placeholder: "Select an option",
+				allowClear: true,
+				width: '100%' // Ensure full width
+			});
+
+			$('#MemberId').change(function () {
+				const memberId = $(this).val();
+
+				$('#AppointmentDate').val(''); // Clear the date
+				$('#TimeSelection').hide(); // Hide the time slot selection
+
+				if (!memberId) {
+					$('#PackageId').prop('disabled', true).html('<option value="" selected disabled>Select a package</option>');
+					$('#StaffId').prop('disabled', true).html('<option value="" selected disabled>Select staff</option>');
+					$('#AppointmentDate').prop('disabled', true);
+					return;
+				}
+
+				// AJAX request to fetch packages and staff list for the selected member
+				$.ajax({
+					url: '/Appointment/GetPackagesAndStaffs', // Adjust this to your backend route
+					type: 'GET',
+					data: { memberId: memberId },
+					success: function (response) {
+						if (response.success) {
+							// Populate the packages dropdown
+							let packageOptions = '<option value="" selected disabled>Select a package</option>';
+							if (response.packages && response.packages.length) {
+								response.packages.forEach(pkg => {
+									packageOptions += `<option value="${pkg.value}">${pkg.text}</option>`;
+								});
+							} else {
+								packageOptions += '<option value="" disabled>No packages available</option>';
+							}
+							$('#PackageId').html(packageOptions).prop('disabled', false);
+
+							// Populate the staff dropdown
+							let staffOptions = '<option value="" selected disabled>Select staff</option>';
+							if (response.staffList && response.staffList.length) {
+								response.staffList.forEach(staff => {
+									staffOptions += `<option value="${staff.value}">${staff.text}</option>`;
+								});
+							} else {
+								staffOptions += '<option value="" disabled>No staff available</option>';
+							}
+							$('#StaffId').html(staffOptions).prop('disabled', false);
+							$('#AppointmentDate').prop('disabled', false);
+
+						} else {
+							alert(response.message || 'Failed to fetch packages and staff.');
+							$('#PackageId').prop('disabled', true).html('<option value="" selected disabled>Select a package</option>');
+							$('#StaffId').prop('disabled', true).html('<option value="" selected disabled>Select staff</option>');
+							$('#AppointmentDate').prop('disabled', true);
+
+						}
+					},
+					error: function (xhr, status, error) {
+						console.error('Error:', status, error);
+						alert('Failed to fetch packages and staff. Please try again.');
+						$('#PackageId').prop('disabled', true).html('<option value="" selected disabled>Select a package</option>');
+						$('#StaffId').prop('disabled', true).html('<option value="" selected disabled>Select staff</option>');
+						$('#AppointmentDate').prop('disabled', true);
+
+					}
+				});
+			});
+
+			$('#AppointmentDate').on('change', function () {
+				const selectedDate = new Date($(this).val());
+				const today = new Date();
+				today.setHours(0, 0, 0, 0); // Remove time for comparison
+
+				// Example: Limit appointment dates to 1 month ahead
+				const maxDate = new Date(today);
+				maxDate.setMonth(today.getMonth() + 1);
+
+				if (selectedDate < today) {
+					alert('Appointment date cannot be in the past.');
+					$(this).val(''); // Clear invalid value
+				} else if (selectedDate > maxDate) {
+					alert('Appointment date cannot be more than 1 month in advance.');
+					$(this).val(''); // Clear invalid value
+				}
+			});
+
+			// Main change handler
+			$('#StaffId, #AppointmentDate, #PackageId').on('change', function () {
+				let staffId = $('#StaffId').val();
+				let memberId = $('#MemberId').val();
+				let appointmentDate = $('#AppointmentDate').val();
+				let selectedPackageId = $('#PackageId').val();
+
+				$('#EndTime').val(''); // Clear the expected end time
+				$('#End_datetime').val(''); // Clear the hidden end datetime field
+
+				if (staffId && appointmentDate && selectedPackageId) {
+					if (staffId == "0") { // Auto-assign staff
+						handleAutoAssign(selectedPackageId);
+					} else { // Specific staff selected
+						$.ajax({
+							url: '@Url.Action("GetAvailableTimes", "Appointment")',
+							type: 'GET',
+							data: {
+								memberId : memberId,
+								staffId: staffId,
+								appointmentDate: appointmentDate,
+								selectedPackageId: selectedPackageId
+							},
+							success: function (data) {
+								if (data.success) {
+									populateTimeSlots(data.availableTimes); // Pass the returned time slots to the function
+									// populateTimeSlots(data.availableTimes);
+									$('.PackageId').siblings('.error-message').text('').fadeOut().parent('.form-group').removeClass('hasError');
+									$('.AppointmentDate').siblings('.error-message').text('').fadeOut().parent('.form-group').removeClass('hasError');
+									$('.StaffId').siblings('.error-message').text('').fadeOut().parent('.form-group').removeClass('hasError');
+								} else {
+									$('#TimeSelection').hide();
+
+									// Dynamically show error for the specific field
+									if (data.error) {
+										if(data.error === "Access Denied")
+										{
+											window.location.href = "/Home/Home";
+										}
+										else
+										{
+											console.log("Change all");
+											console.log('Error field:', data.error);
+											console.log('Error message:', data.message);
+
+											$(`.${data.error}`).siblings('span.error-message').text(data.message).fadeIn().parent('.form-group').addClass('hasError');
+										}
+									}
+								}
+							},
+							error: function (xhr, status, error) {
+								console.log('Error:', error);
+								console.log(xhr.responseText);
+							}
+						});
+					}
+				} else {
+					$('#TimeSelection').hide();
+				}
+			});
+
+			$('#AppointmentTime').on('change', function () {
+				let selectedTime = $(this).val();
+				let appointmentDate = $('#AppointmentDate').val();
+				let selectedPackageId = $('#PackageId').val();
+
+				if (selectedTime && appointmentDate && selectedPackageId) {
+					$.ajax({
+						url: '@Url.Action("GetTreatmentDuration", "Appointment")',
+						type: 'GET',
+						data: { selectedPackageId: selectedPackageId },
+						success: function (data) {
+							if (data.success) {
+								let duration = data.treatmentDuration;
+								let endTime = calculateEndTime(selectedTime, duration);
+
+								$('#EndTime').val(endTime); // Update end time display
+								$('#End_datetime').val(`${appointmentDate} ${endTime}`); // Update hidden input
+							} else {
+								console.log(data.message);
+							}
+						},
+						error: function (xhr, status, error) {
+							console.log('Error:', error);
+							console.log(xhr.responseText);
+						}
+					});
+				} else {
+					$('#EndTime').val('');
+					$('#End_datetime').val('');
+				}
+			});
+
+			//Form submit
+			$('form').submit(function (event) {
+
+				event.preventDefault();
+				// Show loading spinner
+				loadingAlert();
+
+				HTMLFormElement.prototype.submit.call(this);
+
+			});
+		});
+
+		// Function to generate time slots
+		function generateTimeSlots(startTime, endTime, interval) {
+			let slots = [];
+			let [startHours, startMinutes] = startTime.split(':').map(Number);
+			let [endHours, endMinutes] = endTime.split(':').map(Number);
+
+			let current = new Date();
+			current.setHours(startHours, startMinutes, 0);
+
+			let end = new Date();
+			end.setHours(endHours, endMinutes, 0);
+
+			while (current < end) {
+				let hours = current.getHours().toString().padStart(2, '0');
+				let minutes = current.getMinutes().toString().padStart(2, '0');
+				slots.push(`${hours}:${minutes}`);
+				current.setMinutes(current.getMinutes() + interval);
+			}
+
+			return slots;
+		}
+
+		// Function to populate time slots
+		function populateTimeSlots(slots) {
+			$('#AppointmentTime').empty();
+			$('#AppointmentTime').append('<option value="">Select available time</option>');
+
+			const today = new Date();
+			const selectedDate = new Date($('#AppointmentDate').val());
+			const isToday = selectedDate.toDateString() === today.toDateString(); // Check if the appointment date is today
+
+			slots.forEach(function (slot) {
+				let [slotHours, slotMinutes] = slot.split(':').map(Number);
+				let slotTime = new Date();
+				slotTime.setHours(slotHours, slotMinutes, 0); // Set the time for the slot
+
+				// Check if the slot is within 15 minutes of current time
+				let fifteenMinutesAhead = new Date(today.getTime() + 15 * 60 * 1000); // Current time + 15 minutes
+
+				if (isToday) {
+					// Disable past time slots and slots within 15 minutes from now
+					if (slotTime < new Date() || slotTime <= fifteenMinutesAhead) {
+						$('#AppointmentTime').append(`<option value="${slot}" disabled>${slot} </option>`);
+					} else {
+						$('#AppointmentTime').append(`<option value="${slot}">${slot}</option>`);
+					}
+				} else {
+					$('#AppointmentTime').append(`<option value="${slot}">${slot}</option>`);
+				}
+			});
+
+			$('#TimeSelection').show();
+		}
+
+		// Function to handle auto-assign time slots
+		function handleAutoAssign(selectedPackageId) {
+			// Fetch treatment duration
+			$.ajax({
+				url: '@Url.Action("GetTreatmentDuration", "Appointment")',
+				type: 'GET',
+				data: { selectedPackageId: selectedPackageId },
+				success: function (response) {
+					if (response.success) {
+						$('.PackageId').siblings('.error-message').text('').fadeOut().parent('.form-group').removeClass('hasError');
+						$('.AppointmentDate').siblings('.error-message').text('').fadeOut().parent('.form-group').removeClass('hasError');
+						$('.StaffId').siblings('.error-message').text('').fadeOut().parent('.form-group').removeClass('hasError');
+
+						let duration = response.treatmentDuration;
+
+						// Generate slots from 10:00 to 22:00 (10:00 PM)
+						let availableSlots = generateTimeSlots("10:00", "22:00", 15);
+
+						// Filter slots to accommodate the treatment duration
+						let validSlots = availableSlots.filter(slot => {
+							let endTime = calculateEndTime(slot, duration);
+							return endTime <= "22:00";
+						});
+
+						populateTimeSlots(validSlots);
+					} else {
+						console.log(response.message);
+					}
+				},
+				error: function (xhr, status, error) {
+					console.log('Error:', error);
+					console.log(xhr.responseText);
+				}
+			});
+		}
+
+		// Function to calculate end time
+		function calculateEndTime(startTime, durationInMinutes) {
+			let [hours, minutes] = startTime.split(':').map(Number);
+			let startDateTime = new Date();
+			startDateTime.setHours(hours, minutes, 0);
+			startDateTime.setMinutes(startDateTime.getMinutes() + durationInMinutes);
+
+			let endHours = startDateTime.getHours().toString().padStart(2, '0');
+			let endMinutes = startDateTime.getMinutes().toString().padStart(2, '0');
+			return `${endHours}:${endMinutes}`;
+		}
+	</script>
+
+}

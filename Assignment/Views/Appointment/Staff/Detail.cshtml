@@ -1,0 +1,87 @@
+﻿@model AppointmentDetailVM
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Appointment | " + Model.Appointment.Code;
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Appointment", "/Appointment/FullCalendar"),
+		new KeyValuePair<string, string>("Detail", null)
+	};
+}
+
+<div class="container"><!-- con1 -->
+	<div class="columns">
+		<!-- con2 -->
+		<!-- left-side -->
+		<div class="formformat column col-6 col-sm-12 card my-single-card">
+			<div class="card-header">
+				<div class="card-title h5">
+					<!-- Back Button -->
+					<button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+					<!-- Page Title -->
+					Appointment @Model.Appointment.Code
+				</div>
+			</div>
+
+			<div class="card-body my-pagecard-body">
+				<!-- Title -->
+				<div>Title: @Model.Appointment.Title</div>
+
+				<!-- Start Time -->
+				<div>DateTime: @Helpers.FormatDate(Model.Appointment.Start_datetime) - @Helpers.FormatDate(Model.Appointment.End_datetime)</div>
+
+				<!-- Staff -->
+				<div>Staff: @Model.Appointment.Staff.Person.Name (@Model.Appointment.Staff.Person.Email)</div>
+
+				
+
+				@if ( Model.Appointment.Type == 2) {
+
+					<!-- Member -->
+					<div>Member: @Model.Appointment.Member.Code - @Model.Appointment.Member.Person.Name (@Model.Appointment.Member.Person.Email)</div>
+
+					<!-- Package & Treatment -->
+					<div>Package: <a href="/Package/Staff/Detail/@Model.Appointment.OrderPackageTreatment.OrderPackage.PackageId" uk-tooltip="View This Service Details">@Model.Appointment.OrderPackageTreatment.OrderPackage.Code - @Model.Appointment.OrderPackageTreatment.OrderPackage.Package.Name </a></div>
+					<div>Treatment: @Model.Appointment.OrderPackageTreatment.Treatment </div>
+
+					<!-- Duration -->
+					<div>Duration (Hours): @Model.Appointment.OrderPackageTreatment.Duration</div>
+
+					<!-- Services -->
+					<div>
+						Services Include:
+						<div>
+							@if (Model.Services != null && Model.Services.Any())
+							{
+								<ul>
+									@foreach (var s in Model.Services)
+									{
+										<li><a href="/Service/ServiceEdit/@s.Service.Id" uk-tooltip="View This Service Details">@s.Service.Name ( @(s.Service.Duration * 60) min )</a></li>
+									}
+								</ul>
+							}
+							else
+							{
+								<div>No services available.</div>
+							}
+						</div>
+					</div>
+
+					<!-- Room -->
+					<div>Room: @Model.Appointment.Room.Name</div>
+				}
+
+				<!-- Status -->
+				<div>Status: @Helpers.GetAppointmentStatus(Model.Appointment.Status)</div>
+			</div>
+
+		</div> <!-- end left-side -->
+		<!-- right-side -->
+		<div class="column col-6 col-sm-12 uk-flex uk-flex-middle uk-flex-center">
+		</div> <!-- end right-side -->
+
+	</div> <!-- end con2 -->
+</div> <!-- end con1 -->

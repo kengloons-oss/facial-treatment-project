@@ -1,0 +1,137 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Package | List";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Package", "/Package/List"),
+		new KeyValuePair<string, string>("List", null)
+	};
+
+	string user_role = Helpers.GetUser().UserPosition;
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+					@* filter service category involved in package *@
+					<label for="filter_service_category">Service Category: </label>
+					<select id="filter_service_category" name="service_filters" asp-items="@ViewBag.Service_cat_selectlist" class="select2" multiple></select>
+					<input type="hidden" name="service_categories" />
+
+					@* filter num of treatment in each package *@
+					<label for="filter_treatment_num">Number of Treatment: 1 - <b id="treatment_num_result">@ViewBag.Treatment_num</b></label>
+					<input 
+						type="range"
+						id="filter_treatment_num"
+						name="treatment_num"
+						min="1"
+						max="50"
+						step="1"
+						value="@((int)ViewBag.Treatment_num)" />
+
+					@* filter package price range *@
+					<label for="filter_package_price">Package Price Range: RM 1 - RM <b id="package_price_result">@ViewBag.Package_price</b></label>
+						<input 
+							type="range"
+							id="filter_package_price"
+							name="package_price"
+							min="1"
+							max="2000"
+							step="1"
+							value="@((int)ViewBag.Package_price)" />
+					
+					@* filter page per page *@
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+				</div>
+			</div>
+		</div>
+	</div>
+
+	@if (user_role == "manager")
+	{
+		<div class="card-button-right">
+			<button data-get="/Package/Staff/Create" id="b_create">Create New Package</button>
+		</div>
+	}
+
+	<div class="search-container card-right-tb">
+		<div class="search-bar">
+			@* search package name *@
+			@Html.TextBox("package_name", "", new { type = "search", @class = "search-input", autofocus = "", id = "search_package_name", data_trim = "", placeholder = "Search Package Name..." })
+			<button id="search-button"><i class="fas fa-search"></i></button>
+		</div>
+	</div>
+</form>
+
+
+
+<div id="target">
+	<partial name="Staff/_PackageList" />
+</div>
+
+@section foot {
+	<script>
+		var selected_categories = [];	// initialize service category filter list
+
+		$(document).ready(function() {
+			// service category filter list
+			function filter_categories() {
+				$('input[name="service_categories"]').val(JSON.stringify(selected_categories));
+				$('#f').submit();
+			}
+
+			// select service category from select list
+			$('#filter_service_category').on('select2:select', function(e) {
+				const selectedOption = e.params.data;
+				selected_categories.push(+selectedOption.id);
+
+				filter_categories();
+			});
+
+			// unselect service category from select list
+			$('#filter_service_category').on('select2:unselect', function(e) {
+				const removedOption = e.params.data;
+
+				// remove the category from the selected categories
+				selected_categories = selected_categories.filter(function (cat_id) {
+					return cat_id !== +removedOption.id;
+				});
+
+				filter_categories();
+			});
+		});
+
+		// search-as-you-type feature
+		let timer = null;
+
+		$('#search_package_name').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 100);
+		});
+
+		// update range input result
+		$('#filter_treatment_num').on('input', function () {
+			var treatment_num = $(this).val();
+			$('#treatment_num_result').text(treatment_num);
+		});
+
+		$('#filter_package_price').on('input', function () {
+			var package_price = $(this).val();
+			$('#package_price_result').text(package_price);
+		});
+
+		// trigger update
+		$('#filter_treatment_num, #filter_package_price, #filter_pageitems').on('change', e => {
+			$(e.target.form).submit();
+		});
+	</script>
+}

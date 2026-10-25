@@ -1,0 +1,95 @@
+﻿@using Assignment.Models
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Inbox>
+
+@{
+    string[] InboxFields = ["Id", "Title", "Message", "Created Date"];
+}
+
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+    @Model.Count() of @Model.TotalItemCount record(s) &nbsp;&nbsp;| &nbsp;
+    Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+    <thead>
+        <tr>
+            @foreach (var f in InboxFields)
+            {
+                string d = "des";
+                string c = "";
+                string sort_icon = "des";
+
+                if (f == ViewBag.Sort)
+                {
+                    d = ViewBag.Dir == "des" ? "asc" : "des";
+                    c = ViewBag.Dir;
+                    sort_icon = d == "asc" ? "fa-sort-up" : "fa-sort-down";
+                }
+
+                <th class="table_headers">
+                
+                    <a data-ajax="true"
+                       data-ajax-update="#target"
+                       data-ajax-loading="#loader"
+                       href="?title=@ViewBag.Name&sort=@f&dir=@d&page_items=@ViewBag.Page_items&page=@Model.PageNumber" class="@c">
+                        @f<i class='fas @sort_icon'></i>
+                    </a>
+                </th>
+            }
+            <th class="table_headers">Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+		@foreach (var s in Model)
+		{
+			<tr>
+				<td>@Helpers.FormatId("IB", s.Id)</td>
+				<td>@s.Title</td>
+				<td>@s.Message</td>
+				<td>@Helpers.FormatDateTime(s.Created_datetime)</td>
+				<td>
+                    <!-- Edit Button -->
+                    @* <button class="uk-button uk-button-default uk-button-small pastel-edit-btn detial-btn" data-get="/Inbox/PersonalInboxDetail/@s.Id" uk-tooltip="View This Details"> *@
+                    <button type="button" class="uk-button uk-button-default uk-button-small pastel-edit-btn detial-btn" data-id="@s.Id" uk-tooltip="View This Details">
+                        <span uk-icon="pencil" class="uk-icon"></span> <span class="button-text">View</span>
+                    </button>
+                </td>
+			</tr>
+		}
+
+        @if (Model.Count() == 0)
+        {
+            <tr>
+                <td colspan="5">No available inbox record ~</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav class="admin-pager">
+    @{
+        var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+        options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+        options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+        options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+        options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+        var ajaxOptions = new AjaxOptions
+            {
+                HttpMethod = "get",
+                UpdateTargetId = "target",
+                LoadingElementId = "#loader",
+            };
+    }
+
+    @Html.PagedListPager(
+        Model,
+            p => $"?title={ViewBag.Name}&page_items={@ViewBag.Page_items}&page={p}",
+        PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+    )
+</nav>

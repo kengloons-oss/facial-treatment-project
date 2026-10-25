@@ -1,0 +1,237 @@
+﻿@model IEnumerable<Cart>
+
+@{
+	ViewBag.Title = "Checkout";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Your Cart", "/Package/Cart"),
+		new KeyValuePair<string, string>("Checkout", null)
+	};
+	int index = 1;
+}
+
+@section head {
+	<script src="/js/general/packageDetailModal.js"></script>
+}
+
+@if (TempData["Success_Title"] != null)
+{
+	<script>
+		Swal.fire({
+		icon: 'success',
+		title: '@TempData["Success_Title"]',
+		text: '@TempData["Alert_Success"]',
+		showConfirmButton: true
+		});
+	</script>
+}
+
+@if (TempData["Error_Title"] != null)
+{
+	<script>
+		Swal.fire({
+		icon: 'error',
+		title: '@TempData["Error_Title"]',
+		text: '@TempData["Alert_Error"]',
+		showConfirmButton: true
+		});
+	</script>
+}
+
+<div class="container card my-pagecard" style="padding-left:22px;">
+	<!-- container card (got border line) -->
+	<div class="columns">
+		<!-- left-side -->
+		<div class="formformat column col-8 col-sm-12">
+			<div class="card-header">
+				<div class="card-title h5">
+					<!-- Back Button -->
+					<button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+					<!-- Page Title -->
+					Checkout
+				</div>
+			</div>
+
+			<div class="card-body my-pagecard-body">
+				<div id="cart-item-list">
+					<!-- cart-item-list -->
+					@foreach (var item in Model)
+					{
+						<div class="cart-item" id="item-@item.Package.Id">
+							<div class="cart-con-1">
+								<!-- cart-con-1 -->
+								<div class="cart-select-section">
+									@index.
+								</div>
+								<div class="cart-img">
+									@{
+										string? path = item.Package.PackagePhotos.Where(pp => pp.Type == 1).Select(pp => pp.Path).FirstOrDefault();
+									}
+									@if (!string.IsNullOrEmpty(path))
+									{
+										<img src="/images/package/cover/@path" />
+									}
+									else
+									{
+										<img src="/images/package/defaultImage.png" />
+									}
+								</div>
+							</div><!-- end cart-con-1 -->
+
+							<div class="cart-con-2">
+								<!-- cart-con-2 -->
+								<div class="cart-con-row1">
+									<div class="cart-itemname">
+										<span class="label_id">@item.Package.Code</span> -
+										<span class="label_name">@item.Package.Name</span> -
+										<span class="label_price">RM @item.Package.Price.ToString("N2")</span>
+									</div>
+
+									<div class="cart-action">
+										<button class="remove b_remove remove-cart-item detail-btn" data-id="@item.Package.Id">View Detail</button>
+									</div>
+								</div>
+
+								<div class="cart-con-row2">
+									<span class="label-text cart-item-detail">Total Treatment: @item.Package.Treatment</span>
+								</div>
+							</div><!-- end cart-con-2 -->
+						</div>
+
+						index++;
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- right-side -->
+		<div class="formformat-right column col-4 col-sm-12 ">
+			<div class="container grid-lg responsive-text1 calculatepreview" style="margin-top:30px;">
+				<div class="columns">
+					<div class="column col-12">
+						<!-- Subtotal without Discount -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Subtotal Amount:
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="subtotalWithoutDiscount">@ViewBag.TotalAmount.ToString("N2")</span>
+							</div>
+						</div>
+						<!-- Total Tax -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Tax Charge (@ViewBag.TaxRate%) :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="totalTax">@ViewBag.TaxAmount.ToString("N2")</span>
+							</div>
+						</div>
+
+						<!-- Member Discount Amount -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Member Discount Rate (@((int)ViewBag.DiscountRate) %):
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="totalAmount">@((ViewBag.TotalAmount - ViewBag.DiscountedAmount).ToString("N2"))</span>
+							</div>
+						</div>
+
+						<!-- Final Total -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Total Amount :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="grandTotal">@ViewBag.FinalTotal.ToString("N2")</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<br />
+				<div class="divider"></div>
+
+				<form method="post" action="/Package/PlaceOrder">
+					<div class="form-group">
+						<label for="payment_method">Payment Method: </label>
+						<div class="input-group">
+							<label class="form-radio">
+								<input type="radio" id="stripe" name="payment_method" value="2" checked>
+								<i class="form-icon"></i>Stripe (Credit/Debit Card)
+							</label>
+						</div>
+						<div class="input-group">
+							<label class="form-radio">
+								<input type="radio" id="wallet" name="payment_method" value="3">
+								<i class="form-icon"></i>Meow Wallet
+							</label>
+						</div>
+					</div>
+					
+					<!-- Buttons -->
+					<div class="text-right" style="padding-top:16px;">
+						<button id="submitButton" type="submit" class="btn btn-primary">Proceed to Payment</button>
+					</div>
+					<input type="hidden" name="selectedItems" id="selectedItems" />
+				</form>
+			</div>
+		</div><!-- end right-side -->
+	</div>
+</div>
+
+<!-- Modal for selecting deactivated services -->
+<div id="package-modal" class="modal">
+	<a class="modal-overlay" aria-label="Close"></a>
+
+	<div class="modal-container">
+		<div class="modal-header">
+			<a class="btn btn-clear float-right" aria-label="Close" id="close-package-modal"></a>
+			<h5 class="modal-title">Package Details Of</h5>
+			<span id="package-name">xxxxx</span>
+		</div>
+		<div class="modal-body">
+			<div class="content my-adjustedmodal">
+				@* <p>Here are more details about the package...</p> *@
+				<ul id="package-content"></ul>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary btn-close" id="close-package-modal-btn">Close</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		// Collect selected item IDs and set them in the hidden input before submitting the form
+		$('#checkoutButton').click(function () {
+			var selectedItems = [];
+			$('input[name="selectedItems"]:checked').each(function () {
+				selectedItems.push($(this).val());
+			});
+
+			// Set the selected items in the hidden field
+			$('#selectedItems').val(JSON.stringify(selectedItems)); // Convert to JSON string if needed
+		});
+
+		//Form submit
+		$('form').submit(function (event) {
+			// Prevent default submission temporarily
+			event.preventDefault();
+
+			// Check the selected payment method
+			const selectedPaymentMethod = $('input[name="payment_method"]:checked').val();
+
+			
+			loadingAlert(); //Show loading alert
+			
+
+			// Continue with form submission
+			HTMLFormElement.prototype.submit.call(this);
+		});
+	});
+
+</script>

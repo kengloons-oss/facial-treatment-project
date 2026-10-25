@@ -1,0 +1,84 @@
+﻿@model CategoryVM
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Category | Create";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Category", "/Category/CategoryList"),
+		new KeyValuePair<string, string>("Detail", null)
+	};
+
+	bool isManager = Helpers.isManager();
+}
+
+<form asp-action="CategoryEdit" method="post">
+	<div class="container">
+		<div class="columns">
+			<!-- left-side -->
+			<div class="formformat column col-6 col-sm-12 card my-single-card">
+
+				<div class="card-header">
+					<div class="card-title h5">
+						<!-- Back Button -->
+						<button class="topleft-back" type="button" data-get="/Category/CategoryList" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+						<!-- Page Title -->
+						Category @Helpers.FormatId("CY", Model.Id)
+					</div>
+				</div>
+
+				<div class="card-body my-pagecard-body">
+					<input type="hidden" name="Id" value="@Model.Id" />
+
+					<!-- Name -->
+					<div class="form-group">
+						<label for="Name">Name: </label>
+						@{
+							if (isManager)
+							{
+								<input type="text" name="Name" value="@Model.Name" class="form-input name" required />
+								<span class="form-input-hint error-message"></span>
+							}
+							else
+							{
+								<div class="fake-input">@Model.Name</div>
+							}
+						}
+
+					</div>
+
+
+					<div class="form-group">
+						<label for="Description">Description: </label>
+
+						@{
+							if (isManager)
+							{
+								<textarea name="Description" class="form-input description" required>@Model.Description</textarea>
+								<span class="form-input-hint error-message"></span>
+							}
+							else
+							{
+								<div class="fake-input">@Model.Description</div>
+							}
+						}
+
+					</div>
+
+
+					@if (isManager)
+					{
+						<!-- Buttons -->
+						<div class="text-right" style="padding-top:16px;">
+							<button type="reset" class="btn btn-secondary">Reset</button>
+							<button id="submitButton" type="submit" class="btn btn-primary">Save</button>
+						</div>
+					}
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+</form>

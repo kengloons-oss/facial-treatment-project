@@ -1,0 +1,140 @@
+﻿@using Assignment.Models
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Announcement | List";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Announcement", "/Inbox/List"),
+		new KeyValuePair<string, string>("List", null)
+	};
+
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+					<label for="filter_target">Target: </label>
+					@Html.DropDownList("filter_target", Helpers.inbox_target, new { @class = "form-input" })
+
+					<label for="filter_status">Status: </label>
+					@Html.DropDownList("filter_status", Helpers.status_list, new { @class = "form-input" })
+
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card-button-right">
+
+		@if (Helpers.isManager())
+		{
+			<button type="button" id="deactivate-checked" class="remove b_remove"><i class="fa-solid fa-trash"></i> Delete Checked</button>
+		}
+
+		<button data-get="/Inbox/Create" id="b_create">Create New Announcement</button>
+
+	</div>
+
+	<div class="search-container card-right-tb">
+		<div class="search-bar">
+			@Html.TextBox("title", "",
+							new { type = "search", @class = "search-input", data_trim = "", placeholder = "Search Title Here..." })
+			<button id="search-button"><i class="fas fa-search"></i></button>
+		</div>
+	</div>
+</form>
+
+
+<div id="target">
+	<partial name="Staff/_List">
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		$('#title').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 1);
+		});
+
+		$('#filter_target, #filter_pageitems, #filter_status').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+		// Deactivate Announcement
+		$(document).on('click', '.deactivate-btn', function (e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Deactivate Announcement",
+				html: 'Do you confirm to deactivate this announcement? <br><br><small>* The announcement cannot be activate back after deactivated.</small>',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = '/Inbox/Deactivate/' + id;  // Construct the URL dynamically using the ID
+					const f = $('<form>').appendTo(document.body)[0];
+					f.method = 'post';
+					f.action = url;
+					f.submit();
+				}
+			});
+		});
+
+		// Batch deactivate
+		$('#deactivate-checked').on('click', function () {
+			const selectedIds = $('input[name="ids"]:checked')
+			.map(function () { return this.value; })
+			.get();
+
+			if (selectedIds.length === 0) {
+				Swal.fire('No items selected', 'Please select at least one item to delete.', 'warning');
+				return;
+			}
+
+			Swal.fire({
+				title: 'Delete Selected Items?',
+				html: `Do you confirm to deactivate ${selectedIds.length} announcement? <br><br><small>* The announcement(s) cannot be activate back after deactivated.</small>`,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Yes',
+				cancelButtonText: 'Cancel'
+			}).then(result => {
+				if (result.isConfirmed) {
+				   const url = '/Inbox/DeactivateMany/'; // Endpoint URL
+					const form = $('<form>').appendTo(document.body)[0];
+					form.method = 'post';
+					form.action = url;
+
+					// Add selected IDs as hidden inputs
+					selectedIds.forEach(id => {
+						const input = $('<input>')
+							.attr('type', 'hidden')
+							.attr('name', 'ids')
+							.val(id)[0];
+						form.appendChild(input);
+					});
+
+					form.submit(); // Submit the form
+				}
+			});
+		});
+
+	</script>
+}

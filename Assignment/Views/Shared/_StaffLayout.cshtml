@@ -1,0 +1,414 @@
+﻿@{
+	Context.Response.Headers["Cache-Control"] = "no-store";
+	Context.Response.Headers["Pragma"] = "no-cache";
+	Context.Response.Headers["Expires"] = "0";
+
+	dynamic User = Helpers.GetUser();
+	var UserAvatar = "/images/user/defaultProfile.png";
+	if (User.UserAvatar != null)
+	{
+		UserAvatar = "/images/user/staff/" + User.UserAvatar;
+	}
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>@ViewBag.Title</title>
+	<link rel="shortcut icon" href="/images/favicon.png">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+	<!-- Font Awesome for icon-->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+	<!-- ----- -->
+	<!-- alert -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
+	<!-- jquery -->
+	<script src="/js/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-unobtrusive-ajax/3.2.6/jquery.unobtrusive-ajax.min.js"></script>
+
+	<!-- toast ui calendar -->
+	<link rel="stylesheet" href="/css/tui/toastui-calendar.min.css" />
+	<script src="/js/tui/toastui-calendar.min.js"></script>
+	<!-- UIKit -->
+	<link rel="stylesheet" href="/css/uikit/uikit.css" />
+	<script src="/js/uikit/uikit.min.js"></script>
+	<script src="/js/uikit/uikit-icons.min.js"></script>
+	<!-- Spectre.css -->
+	<link rel="stylesheet" href="/css/spectre/spectre.css">
+	<link rel="stylesheet" href="/css/spectre/spectre-exp.css">
+	<link rel="stylesheet" href="/css/spectre/spectre-icons.css">
+	<!-- chart -->
+	<script src="/js/chart/chart.umd.min.js"></script>
+
+	<!-- Flatpickr CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<!-- Flatpickr JS -->
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+	<!-- OTHERS -->
+	<link rel="stylesheet" href="/css/base.css">
+	<!-- main-searchbar -->
+	<link rel="stylesheet" href="/css/component/main-searchbar.css">
+	<script src="/js/component/main-searchbar.js"></script>
+	<!-- searchbar -->
+	<link rel="stylesheet" href="/css/component/searchbar.css">
+	<script src="/js/component/searchbar.js"></script>
+	<!-- OTHERS (have override library) -->
+	<link rel="stylesheet" href="/css/component/staff/style.css">
+	<link rel="stylesheet" href="/css/component/staff/style2.css">
+	
+
+	<script src="/js/general/validation.js" asp-append-version="true"></script>
+	@RenderSection("head", false)
+</head>
+<body style="width: 110%;">
+
+	@if (TempData["Success_Title"] != null)
+	{
+		<script>
+			Swal.fire({
+				title: "@TempData["Success_Title"]",
+				html: "@Html.Raw(TempData["Alert_Success"])", // Use Html.Raw to render the HTML content properly
+				icon: "success",
+				showDenyButton: false,
+				showCancelButton: false,
+				confirmButtonText: "OK",
+			});
+		</script>
+	}
+	else if (TempData["Error_Title"] != null)
+	{
+		<script>
+			var error_title = "@TempData["Error_Title"]";
+			Swal.fire({
+				title: error_title,
+				html: "@Html.Raw(TempData["Alert_Error"])", // Use Html.Raw here as well
+				icon: "error",
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "OK",
+			}).then((result) => {
+				if(error_title == "Access Denied"){
+					if(result.isConfirmed){
+						window.location.href = "/Login/Login";
+					}
+					else {
+						window.location.href = "/Home/Home";
+					}
+				}
+			});
+		</script>
+	}
+
+	<!-- staff Sidebar -->
+	<button id="toggle-sidebar"><</button>
+	<div class="sidebar">
+		<div class="profile-box">
+			<img src="@UserAvatar" height="60" width="60" style="margin-left: 12px; border: 1px solid #333;">
+			<div>
+				<h3 style="font-size: 1rem;">@User.UserName </h3>
+				<span class="smalledit"><i class="fa-solid fa-user-pen"></i> <a href="/User/Profile">Edit Profile</a></span>
+			</div>
+		</div>
+
+		<div class="sidebar-option">
+
+			<!-- Personal -->
+			<div class="group">
+				<div class="group-header" onclick="toggleGroup(this)">
+					Personal
+					<i class="fa-solid fa-angle-down toggle-icon"></i>
+				</div>
+				<div class="group-content">
+					<a href="/User/Profile">My Profile</a>
+					<a href="/Appointment/Calendar">Personal Calendar</a>
+					<a href="/User/CommissionHistory">Commission History</a>
+				</div>
+			</div>
+
+			<!-- Dashboard -->
+			<a href="/User/Staff/Dashboard" class="group">Dashboard</a>
+
+			<!-- Appointment -->
+			<a href="/Appointment/FullCalendar" class="group">Appointment Calendar</a>
+
+			<!-- Inbox -->
+			<a href="/Inbox/PersonalInboxList" class="group">Inbox</a>
+
+			<!-- Order -->
+			<a href="/Order/Staff/List" class="group">Order</a>
+
+			<!-- Reply Customer -->
+			<a href="https://dashboard.tawk.to/#/dashboard/66e59bce50c10f7a00a9f8ac" class="group" target="_blank">Reply Customer</a>
+
+			<!-- Resources -->
+			<div class="group">
+				<div class="group-header" onclick="toggleGroup(this)">
+					Resources
+					<i class="fa-solid fa-angle-down toggle-icon"></i>
+				</div>
+				<div class="group-content">
+					<a href="/Room/List">Room</a>
+					<a href="/Staff/List">Staff</a>
+					<a href="/Member/List">Member</a>
+				</div>
+			</div>
+
+			<!-- Business Operations -->
+			<div class="group">
+				<div class="group-header" onclick="toggleGroup(this)">
+					Business Operations
+					<i class="fa-solid fa-angle-down toggle-icon"></i>
+				</div>
+				<div class="group-content">
+					<a href="/Inbox/List">Announcement</a>
+					<a href="/Membership/List">Membership</a>
+					<a href="/TopUpReward/RewardList">Top-Up Rewards</a>
+					<a href="/ReferralReward/ReferralRewardList">Referral Rewards</a>
+				</div>
+			</div>
+
+			<!-- Services & Packages -->
+			<div class="group">
+				<div class="group-header" onclick="toggleGroup(this)">
+					Services & Packages
+					<i class="fa-solid fa-angle-down toggle-icon"></i>
+				</div>
+				<div class="group-content">
+					<a href="/Category/CategoryList">Category</a>
+					<a href="/Service/ServicesList">Service</a>
+					<a href="/Package/Staff/List">Package</a>
+				</div>
+			</div>
+
+			<!-- Language Options -->
+			<!-- <a id="toggle-lang" class="group">
+				<i class="fa-solid fa-language"></i> Switch Language
+				<i class="fa-solid fa-angle-down" id="lang-arrow"></i>
+			</a>
+			<div id="lang-options" class="group-content" style="display: none;">
+				<a href="#" class="lang-switch" data-lang="en"><i class="fa-solid fa-globe"></i> English</a>
+				<a href="#" class="lang-switch" data-lang="zh"><i class="fa-solid fa-globe"></i> 中文</a>
+			</div> -->
+
+		</div>
+
+		<div class="sidebar-option sidebar-bottom">
+			<a style="color: red;" href="/Login/Logout"> Logout <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+		</div>
+	</div>
+	<!-- end staff Sidebar -->
+	<!-- page name and breadcrumb -->
+	<main class="adminsidebar">
+		<div class="ad-head">
+			<img src="/images/favicon.png" height="50" width="50" />
+			<h3 style="margin:0;">OwO Meow Beauty - Admin Portal</h3>
+		</div>
+
+		<!-- breadcrumb -->
+		<ul class="breadcrumb" style="margin:.5rem 0rem .5rem 0rem;">
+			@if (ViewBag.Breadcrumbs != null)
+			{
+				foreach (var breadcrumb in (List<KeyValuePair<string, string>>)ViewBag.Breadcrumbs)
+				{
+					if (!string.IsNullOrEmpty(breadcrumb.Value))
+					{
+						// Render as a link if URL is not null
+						<li class="breadcrumb-item">
+							<a href="@breadcrumb.Value">@breadcrumb.Key</a>
+						</li>
+					}
+					else
+					{
+						// Render as plain text if URL is null (current page)
+						<li class="breadcrumb-item">
+							@breadcrumb.Key
+						</li>
+					}
+				}
+			}
+		</ul><!-- end breadcrumb -->
+		<!-- end breadcrumb -->
+		@RenderBody()
+	</main>
+
+	<!-- Footer -->
+	<footer class="text-center">
+		<p>&copy; 2024 OWO Meow Beauty. All rights reserved.</p>
+	</footer>
+
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+	<script src="/js/jquery.validate.min.js"></script>
+	<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+	<script src="/js/app.js" asp-append-version="true"></script>
+
+	<!-- Crop and Rotate Photo -->
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+	<!-- For selection field that can search -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+	@RenderSection("foot", false)
+
+
+	<script>
+		//BACK
+		function back() {
+			history.back();
+		}
+
+		function toggleGroup(header) {
+			const group = header.parentElement;
+			group.classList.toggle('open');
+			// Toggle the shrunk class on the header for font size adjustment
+			const headerElement = group.querySelector('.group-header');
+			headerElement.classList.toggle('shrunk');
+		}
+	</script>
+	<script>
+		// Replace PHP variables with front-end equivalents
+		var user_role = ''; // Replace with user role if needed
+		var baseURL = ''; // Replace with your base URL if needed
+		var lang = {}; // Replace with your language object as needed
+		var sidebarOpen = false; // Default state for the sidebar
+
+		// Initialize sidebar state
+		if (!sidebarOpen) {
+			$('#toggle-sidebar').css('left', '10px');
+			$('.sidebar').addClass('closed');
+			$('main').addClass('shrink');
+			$('#toggle-sidebar').text('>');
+		} else {
+			$('#toggle-sidebar').css('left', '216px');
+			$('.sidebar').removeClass('closed');
+			$('main').removeClass('shrink');
+			$('#toggle-sidebar').text('<');
+		}
+
+		// Toggle sidebar state
+		$('#toggle-sidebar').click(function () {
+			sidebarOpen = !sidebarOpen;
+
+			if (sidebarOpen) {
+				$('#toggle-sidebar').css('left', '216px');
+				$('.sidebar').removeClass('closed');
+				$('main').removeClass('shrink');
+				$(this).text('<');
+			} else {
+				$('#toggle-sidebar').css('left', '10px');
+				$('.sidebar').addClass('closed');
+				$('main').addClass('shrink');
+				$(this).text('>');
+			}
+
+			// Save sidebar state to localStorage
+			localStorage.setItem('sidebarOpen', sidebarOpen ? '1' : '0');
+		});
+
+		// Restore sidebar state on page load
+		$(document).ready(function () {
+
+			// Initialize select2
+			$('.select2').select2({
+				allowClear: true,
+				width: '100%' // Ensure full width
+			});
+
+			const storedSidebarState = localStorage.getItem('sidebarOpen');
+			if (storedSidebarState === '1') {
+				sidebarOpen = true;
+				$('#toggle-sidebar').css('left', '216px');
+				$('.sidebar').removeClass('closed');
+				$('main').removeClass('shrink');
+				$('#toggle-sidebar').text('<');
+			} else {
+				sidebarOpen = false;
+				$('#toggle-sidebar').css('left', '10px');
+				$('.sidebar').addClass('closed');
+				$('main').addClass('shrink');
+				$('#toggle-sidebar').text('>');
+			}
+
+			// Show loading alert when FullCalendar or Calendar is clicked
+			$('.sidebar-option a[href="/Appointment/FullCalendar"], .sidebar-option a[href="/Appointment/Calendar"]').on('click', function (e) {
+				e.preventDefault(); // Prevent the default navigation temporarily
+
+				// Show loading spinner
+				loadingAlert();
+
+				// Proceed with navigation after showing the alert
+				const href = $(this).attr('href');
+				window.location.href = href;
+
+			});
+		});
+
+		// Hover to display sidebar when closed
+		$('.sidebar-option').hover(
+			function () {
+				if (!sidebarOpen) {
+					$('#toggle-sidebar').css('left', '216px');
+					$('.sidebar').removeClass('closed');
+					$('main').removeClass('shrink');
+				}
+			},
+			function () {
+				if (!sidebarOpen) {
+					$('#toggle-sidebar').css('left', '10px');
+					$('.sidebar').addClass('closed');
+					$('main').addClass('shrink');
+				}
+			}
+		);
+
+		// Handle language switch
+		$('.lang-switch').on('click', function (e) {
+			e.preventDefault();
+			const selectedLang = $(this).data('lang');
+			localStorage.setItem('lang', selectedLang);
+			location.reload(); // Reload to apply changes if necessary
+		});
+
+		// Helper for translation
+		function __(str) {
+			return lang[str] || str; // Return translation if found, otherwise return original string
+		}
+
+
+		// Toggle language options
+		$('#toggle-lang').click(function () {
+			$('#lang-options').slideToggle();
+			$('#lang-arrow').toggleClass('fa-angle-down fa-angle-up');
+		});
+		//Change Language Option
+		$(document).ready(function () {
+			$('.lang-switch').on('click', function (e) {
+				e.preventDefault();
+
+				// Get the clicked language text
+				var selectedLanguage = $(this).find('span').text();
+
+				// Update all `.lang-switch span` elements to show the selected language
+				$('.lang-switch span').each(function () {
+					var currentLang = $(this).text();
+					$(this).text(currentLang === 'English' ? '中文' : 'English');
+				});
+
+				// (Optional) Log the selected language
+				console.log('Selected Language:', selectedLanguage);
+			});
+		});
+	</script>
+
+</body>
+</html>

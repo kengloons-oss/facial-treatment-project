@@ -1,0 +1,119 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Staff | List";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Staff", "/Staff/List"),
+		new KeyValuePair<string, string>("List", null)
+	};
+
+	var User = Helpers.GetUser();
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+					<label for="filter_role">Role: </label>
+					@Html.DropDownList("role", Helpers.roles, null, new { id = "filter_role" })
+
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	@if (User.UserPosition == "manager")
+	{
+		<div class="card-button-right">
+			<button data-get="/Staff/ImportStaff" id="b_import">Import New Staff</button>
+			<button data-get="/Staff/Create" id="b_create">Create New Staff</button>
+		</div>
+	}
+
+	<div class="search-container card-right-tb">
+		<div class="search-bar">
+			@Html.TextBox("name", "", new { type = "search", @class = "search-input", autofocus = "", id = "search", data_trim = "", placeholder = "Search name here ..." })
+			<button id="search-button"><i class="fas fa-search"></i></button>
+		</div>
+	</div>
+
+</form>
+
+<div id="target">
+	<partial name="_StaffList" />
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		// search-as-you-type feature
+		$('#search').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 200);
+		});
+
+		$('#filter_role, #filter_pageitems').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+		$(document).on('click', '.activate-btn', function (e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Activate Staff",
+				text: 'Are you confirm to activate this staff ' + 'SF' + id.toString().padStart(4, '0') + '?',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = '/Staff/Activate/' + id;  // Construct the URL dynamically using the ID
+					const f = $('<form>').appendTo(document.body)[0];
+					f.method = 'post';
+					f.action = url;
+					f.submit();
+				}
+			});
+		});
+
+		$(document).on('click', '.deactivate-btn', function (e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Deactivate Staff",
+				text: 'Are you confirm to deactivate this staff ' + 'SF' + id.toString().padStart(4, '0') + '?',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = '/Staff/Deactivate/' + id;  // Construct the URL dynamically using the ID
+					const f = $('<form>').appendTo(document.body)[0];
+					f.method = 'post';
+					f.action = url;
+					f.submit();
+				}
+			});
+		});
+	</script>
+}

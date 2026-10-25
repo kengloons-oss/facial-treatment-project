@@ -1,0 +1,118 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Service>
+
+@{
+    string[] ServiceFields = { "Id", "Name", "Description", "Price", "Category" };
+
+    bool isManager = Helpers.isManager();
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+    @Model.Count() of @Model.TotalItemCount record(s) &nbsp;&nbsp;| &nbsp;
+    Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+    <thead>
+        <tr>
+            @foreach (var field in ServiceFields)
+            {
+                string direction = "asc";
+                string className = "";
+                string sortIcon = "desc";
+
+                if (field == ViewBag.Sort)
+                {
+                    direction = ViewBag.Dir == "desc" ? "asc" : "desc";
+                    className = ViewBag.Dir;
+                    sortIcon = direction == "asc" ? "fa-sort-up" : "fa-sort-down";
+                }
+
+                <th class="table_headers">
+                    <a data-ajax="true"
+                    data-ajax-update="#target"
+                    data-ajax-loading="#loader"
+                       href="?name=@ViewBag.Name&filter_status=@ViewBag.Status&priceStart=@ViewBag.PriceStart&priceEnd=@ViewBag.PriceEnd&categoryId=@ViewBag.CategoryId&sort=@field&dir=@direction&page_items=@ViewBag.Page_items&page=@Model.PageNumber">
+                        @field <i class='fas @sortIcon'></i>
+                    </a>
+                </th>
+            }
+            <th class="table_headers">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var service in Model)
+        {
+            <tr>
+                <td>@service.Code</td>
+                <td>@service.Name</td>
+                <td>@service.Description</td>
+                <td>@service.Price</td>
+                <td>@service.Category.Name</td>
+                <td>
+                    <!-- Edit Button -->
+                    <button class="uk-button uk-button-default uk-button-small pastel-edit-btn" data-get="/Service/ServiceEdit/@service.Id" uk-tooltip="View / Edit This Details">
+                        <span uk-icon="pencil" class="uk-icon"></span> <span class="button-text">@(isManager ? "Edit" : "Detail")</span>
+                    </button>
+
+                    @{
+                        if (isManager){
+                            if (service.Status == 0)
+                            {
+                                <!-- Reactivate Button -->
+                                <button class="uk-button uk-button-primary uk-button-small pastel-reactivate-btn equal-width-btn activate-btn" data-id="@service.Id" uk-tooltip="Reactivate This Service">
+                                    <span uk-icon="history" class="uk-icon"></span> <span class="button-text">Reactivate</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <!-- Deactivate Button -->
+                                <button class="uk-button uk-button-danger uk-button-small pastel-deactivate-btn equal-width-btn deactivate-btn" data-id="@service.Id" uk-tooltip="Deactivate This Service">
+                                    <span uk-icon="close" class="uk-icon"></span> <span class="button-text">Deactivate</span>
+                                </button>
+                            }
+                        }
+                    }
+
+                </td>
+            </tr>
+        }
+
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6">No available service(s) found ~</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav class="admin-pager">
+    @{
+        var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+
+        options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+        options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+        options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+        options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+        var ajaxOptions = new AjaxOptions
+            {
+                HttpMethod = "get",
+                UpdateTargetId = "target",
+                LoadingElementId = "#loader",
+            };
+    }
+    @Html.PagedListPager(
+            Model,
+            p => $"?name={ViewBag.Name}&filter_status={ViewBag.Status}&priceStart={ViewBag.PriceStart}&priceEnd={ViewBag.PriceEnd}&categoryId={ViewBag.CategoryId}&sort={ViewBag.SortOrder}&dir={ViewBag.Dir}&page_items={ViewBag.Page_items}&page={p}",
+            PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+        )
+
+   
+</nav>

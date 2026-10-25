@@ -1,0 +1,13 @@
+{
+  "version": "3.0",
+  "defaultProvider": "cdnjs",
+  "defaultDestination": "wwwroot/js/",
+  "libraries": [
+    {
+      "library": "jquery@3.7.1",
+      "files": [
+        "jquery.min.js"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,490 @@
+﻿@model PackageReviewVM
+
+@{
+	ViewBag.Title = "Package Detail";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Package", "/Package/List"),
+		new KeyValuePair<string, string>("Detail", null)
+	};
+
+	var cover_image = Model.Package.PackagePhotos.Where(pp => pp.Type == 1).Select(pp => pp.Path).FirstOrDefault();
+	var normal_images = Model.Package.PackagePhotos.Where(pp => pp.Type == 2).Select(pp => pp.Path).ToList();
+}
+<link rel="stylesheet" href="/css/component/packagelistcom.css">
+
+<button onclick="back()" class="btn btn-secondary" style="margin-top:-20px;">
+	<i class="fa-solid fa-arrow-left"></i> Back
+</button>
+
+@* <div id="content" class="container-half"> *@
+
+<div class="productdetail-container">
+	<div class="productdetail-row">
+		<div class="productdetail-box productdetail-box-left">
+			<div class="imgCard">
+				<div class="product-showcase">
+					<div class="thumbnails">
+						<!-- Cover Image -->
+						<div class="thumb" data-index="0">
+							@if (cover_image != null)
+							{
+								<img src="/images/package/cover/@cover_image" alt="Cover Image" />
+							}
+							else
+							{
+								<img src="/images/package/defaultImage.png" alt="Cover Image" />
+							}
+						</div>
+
+						<!-- Normal Images -->
+						@if (normal_images != null)
+						{
+							@for (int i = 0; i < normal_images.Count; i++)
+							{
+								<div class="thumb" data-index="@(i + 1)">
+									<img src="/images/package/normal/@normal_images[i]" alt="Normal Image" />
+								</div>
+							}
+						}
+					</div>
+
+					<div class="main-image">
+						@if (cover_image != null)
+						{
+							<img id="main-display" src="/images/package/cover/@cover_image" alt="Main Package Image" />
+
+							<!-- testing purpose only -->
+							@* <img id="main-display" src="/images/package/defaultImage.png" alt="Main Package Image" /> *@
+						}
+						else
+						{
+							<img id="main-display" src="/images/package/defaultImage.png" alt="Main Package Image" />
+						}
+						<div class="dots">
+							<span class="dot" data-index="0"></span>
+							@for (int i = 0; i < Model.Package.PackagePhotos.Count - 1; i++)
+							{
+								<span class="dot" data-index="@(i+1)"></span>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="productdetail-box productdetail-box-right">
+				<div class="container ">
+					<div class="columns ">
+						<div class="column col-11 descCard2">
+							<h3>@Model.Package.Code - @Model.Package.Name</h3>
+							<div class="columns col-gapless">
+								<div class="column col-6"><h6>Created Date:</h6></div>
+								<div class="column col-6 text-right"><h6>@Helpers.FormatDate(Model.Package.Created_datetime)</h6></div>
+								<div class="column col-6"><h6>Total Treatment:</h6></div>
+								<div class="column col-6 text-right"><h6>@Model.Package.PackageTreatments.Count</h6></div>
+								<div class="column col-6"><h6>Average Ratings: </h6></div>
+								<div class="column col-6 text-right">
+									@{
+										var data_sum = 0;
+										var data_average = 0.0;
+
+										var averageStar = Model.Reviews.Average(ar => (double?)ar.Star);
+
+										data_sum = Model.Reviews.Count();
+										data_average = averageStar ?? 0.0;
+									}
+									<div class="showcase-ratings showcase-ratings2" data-sum="@data_sum" data-average="@data_average" data-show-details="true">
+										<!-- Placeholder for ratings to be dynamically filled -->
+									</div>
+								</div>
+								<div class="column col-6"><h6>Price:</h6></div>
+								<div class="column col-6 text-right"><h6>RM @Model.Package.Price</h6></div>
+								<br />
+								<div class="column col-12 text-right">
+									<button id="show-more" class="btn">View more package details <i class="fa fa-search-plus"></i></button>
+									<button id="show-qr" class="btn btn-primary">Show QR Code <i class="fa-solid fa-qrcode"></i></button>
+									<br /><br />
+								</div>
+								<div class="column col-12 text-center">
+									@if (Model.Package.Status == 1)
+									{
+										<button class="addToCart uk-button uk-button-default uk-button-small pastel-edit-btn" style="padding: 10px 20px;">
+											<i class="fa-solid fa-cart-shopping"></i>&nbsp;&nbsp;Add To Cart
+										</button>
+									}
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+				<span class="err" id="process"></span>
+			
+		</div>
+	</div>
+
+	<div id="package-modal" class="modal">
+		<a class="modal-overlay" aria-label="Close"></a>
+		<div class="modal-container">
+			<div class="modal-header">
+				<a class="btn btn-clear float-right" aria-label="Close" id="close-package-modal"></a>
+				<h5 class="modal-title">Package Details</h5>
+			</div>
+			<div class="modal-body">
+				<div class="content my-adjustedmodal">
+					<ul>
+						@for (int i = 0; i < Model.Package.PackageTreatments.Count; i++)
+						{
+							var pt = Model.Package.PackageTreatments[i];
+							<li>Treatment @(i + 1) <small>Duration: @pt.Duration hour(s)</small></li>
+							<ul>
+								@{
+									var ordered = pt.PackageTreatmentServices.OrderBy(pts => pts.Priority);
+
+									@for (int j = 0; j < ordered.Count(); j++)
+									{
+										var pts = pt.PackageTreatmentServices[j];
+
+										<li data-index="@j" class="service-name">@pts.Service.Name <small>Duration: @(pts.Service.Duration * 60) minute(s)</small></li>
+										<ul class="service-description">
+											<li class="description-item">@pts.Service.Description</li>
+										</ul>
+									}
+								}
+
+							</ul>
+						}
+					</ul>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-primary" id="close-package-modal-btn">Close</button>
+				@* <button class="btn">Cancel</button> *@
+			</div>
+		</div>
+	</div>
+
+	<!-- Package Detail -->
+	<div id="qr-modal" class="modal">
+		<a class="modal-overlay" aria-label="Close" id="close-qr-modal"></a>
+		<div class="modal-container">
+			<div class="modal-header">
+				<a class="btn btn-clear float-right" aria-label="Close"></a>
+				<h5 class="modal-title">Package QR Code</h5>
+			</div>
+			<div class="modal-body">
+				<div class="content">
+					<img src="@ViewBag.QRCodeImageUrl" width="200px" height="200px" alt="QR Image" />
+					<div class="refferalbtn">
+						<button id="download-btn" class="btn"><i class="fa-regular fa-circle-down"></i> Download QR Code</button>
+						<button id="copy-url-btn" class="btn btn-primary"><i class="fa-regular fa-copy"></i> Copy URL</button>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-primary" id="close-qr-modal-btn">Close</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Package QR Code -->
+	<div class="productdetail-row">
+		<div class="productdetail-box productdetail-box-bottom">
+			<div id="product_review">
+			<div id="review_top_panel" class="card-filter-row" style="border: 0px; border-radius:0px; border-bottom:2px solid #ccc;">
+			<form data-ajax="true"
+					data-ajax-update="#target"
+					data-ajax-loading="#loader"
+					id="review-form">
+				<div class="filter_tool selected" id="filter_all">Show All</div>
+				<div class="filter_tool" id="filter_img">With Images</div>
+
+				<input type="hidden" name="package_id" value="@Model.Package.Id" />
+				<input type="hidden" name="showAll" value="true" />
+				<input type="hidden" name="withImages" value="false" />
+
+				<label>Star &#x2B50;: </label>
+				<select name="star">
+					<option value="">-- Select an option --</option>
+					@for (int i = 1; i <= 5; i++)
+					{
+						<option value="@i">@i</option>
+					}
+				</select>
+
+				<label>Sort By: </label>
+				<select name="sort">
+					<option value="">-- Select an option --</option>
+					<option value="Star">Star</option>
+					<option value="Created Date">Created Date</option>
+					<option value="Images Number">Images Number</option>
+				</select>
+
+				<label>Order By: </label>
+				<select name="dir">
+					<option value="">-- Select an option --</option>
+					<option value="asc">Ascending</option>
+					<option value="desc">Descending</option>
+				</select>
+
+				<label>Record Per Page: </label>
+				<select name="page_items" asp-items="@Helpers.page_items"></select>
+			</form>
+			</div>
+			</div>
+			<div id="target">
+				<partial name="Member/_ReviewList" />
+			</div>
+
+		</div>
+	</div>
+
+</div>
+@* </div>     *@
+@* </div> *@
+
+<style>
+	#show-more {
+		cursor: pointer; /* Changes the cursor to pointer on hover */
+	}
+
+		#show-more:hover, #show-qr:hover {
+			color: blue; /* Changes the color on hover */
+			text-decoration: underline; /* Keeps the underline on hover */
+		}
+
+	.service-name {
+		cursor: pointer;
+	}
+
+		.service-name:hover {
+			color: blue;
+		}
+
+	.service-description {
+		list-style-type: none; /* Removes the bullet points */
+		padding-left: 25px; /* Aligns the description with the parent item */
+		margin: 5px 0; /* Adds spacing between items */
+	}
+
+	.description-item {
+		display: block; /* Ensures proper alignment without bullets */
+	}
+</style>
+
+<script>
+	$(document).ready(function() {
+		// Thumbnail click
+		$('.thumb').click(function() {
+			var index = $(this).data('index');
+			updateMainImage(index);
+		});
+
+		// Dot click
+		$('.dot').click(function() {
+			var index = $(this).data('index');
+			updateMainImage(index);
+		});
+
+		function updateMainImage(index) {
+			var main_img = "@cover_image";
+			var additional_img = @Html.Raw(Json.Serialize(normal_images));
+			additional_img.splice(0, 0, main_img);
+
+			var newImage = index == 0 ? '/images/package/cover/' + main_img : '/images/package/normal/' + additional_img[index];
+			$('#main-display').attr('src', newImage);
+
+			$('.dot').removeClass('active');
+			$('.dot[data-index="' + index + '"]').addClass('active');
+		}
+
+		$('.dot[data-index="0"]').addClass('active');
+
+		$('.thumbnails').on('wheel', function(e) {
+			if (e.originalEvent.deltaY > 0) {
+				$(this).scrollTop($(this).scrollTop() + 30);
+			} else {
+				$(this).scrollTop($(this).scrollTop() - 30);
+			}
+		});
+	});
+</script>
+
+<!-- AJAX Script -->
+<script>
+	$(document).ready(function() {
+		$('.service-description').hide();
+	});
+
+	$(document).on('click', '.service-name', function() {
+		$(this).next('.service-description').toggle();
+	});
+
+	$('.addToCart').on('click', function (e) {
+		e.preventDefault();
+
+		// Get form data
+		var formData = $(this).serialize();
+
+		// Send AJAX request to add to cart
+	@* $.post('/Package/AddToCart', @Model.Package.Id, function (response) { *@
+	@*     if (response.success) { *@
+	@*         Swal.fire({ *@
+	@*             title: 'Success!', *@
+	@*             text: response.message, *@
+	@*             icon: 'success', *@
+	@*             confirmButtonText: 'OK' *@
+	@*         }); *@
+	@*     } else { *@
+	@*         Swal.fire({ *@
+	@*             title: 'Error!', *@
+	@*             text: response.message, *@
+	@*             icon: 'error', *@
+	@*             confirmButtonText: 'OK' *@
+	@*         }); *@
+	@*     } *@
+	@* }).fail(function () { *@
+	@*     Swal.fire({ *@
+	@*         title: 'Error!', *@
+	@*         text: 'An error occurred while adding to the cart.', *@
+	@*         icon: 'error', *@
+	@*         confirmButtonText: 'OK' *@
+	@*     }); *@
+	@* }); *@
+
+		$.ajax({
+			url: '/Package/AddToCart',
+			type: 'POST',
+			data: {
+				packageId: @Model.Package.Id,
+			},
+			success: function (response) {
+				if (response.success) {
+					Swal.fire({
+						title: 'Success!',
+						text: response.message,
+						icon: 'success',
+						confirmButtonText: 'OK'
+					});
+				} else {
+					Swal.fire({
+						title: 'Error!',
+						text: response.message,
+						icon: 'error',
+						confirmButtonText: 'OK'
+					});
+				}
+			},
+			error: function (xhr, status, error) {
+				Swal.fire({
+					title: 'Error!',
+					text: 'An error occurred while adding to the cart.',
+					icon: 'error',
+					confirmButtonText: 'OK'
+				});
+			}
+		});
+	});
+
+	// filter show all
+	$('#filter_all').on('click', function(e) {
+		e.preventDefault();
+		var isShowAll = $('[name="showAll"]').val();
+
+		if (isShowAll == "true") {
+			$('#filter_all').removeClass('selected');
+			$('#filter_img').addClass('selected');
+			$('[name="showAll"]').val(false);
+			$('[name="withImages"]').val(true);
+		} else {
+			$('#filter_all').addClass('selected');
+			$('#filter_img').removeClass('selected');
+			$('[name="showAll"]').val(true);
+			$('[name="withImages"]').val(false);
+		}
+
+		$('#review-form').submit();
+	});
+
+	// filter with images
+	$('#filter_img').on('click', function(e) {
+		e.preventDefault();
+
+		var isFilterImg = $('[name="withImages"]').val();
+
+		if (isFilterImg == "true") {
+			$('#filter_all').addClass('selected');
+			$('#filter_img').removeClass('selected');
+			$('[name="showAll"]').val(true);
+			$('[name="withImages"]').val(false);
+		} else {
+			$('#filter_all').removeClass('selected');
+			$('#filter_img').addClass('selected');
+			$('[name="showAll"]').val(false);
+			$('[name="withImages"]').val(true);
+		}
+
+		$('#review-form').submit();
+	});
+
+	// trigger update review list
+	$('select').on('change', function(e) {
+		$(e.target.form).submit();
+	});
+
+	// click download button
+	$('#download-btn').on('click', e => {
+		var qrCodeUrl = "@ViewBag.QRCodeImageUrl";
+
+		var downloadLink = $('<a>')
+			.attr('href', qrCodeUrl)
+			.attr('download', 'PackageQR.png')
+			.appendTo('body');
+
+		downloadLink[0].click();
+		downloadLink.remove();
+	});
+
+	// click copy url button
+	$('#copy-url-btn').on('click', e => {
+		navigator.clipboard.writeText("@ViewBag.QRCodeUrl").then(() => {
+			Swal.fire({
+				title: "URL copied to clipboard!",
+				text: 'Let\'s share it to your friends!',
+				icon: 'success', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: false,
+				confirmButtonText: "Yes"
+			});
+		}).catch(err => {
+			Swal.fire({
+				title: "Action Failed",
+				text: 'Failed to copy URL...',
+				icon: 'error', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: false,
+				confirmButtonText: "Yes"
+			});
+		});
+	});
+
+	// show more details
+	$('#show-more').on('click', function(e) {
+		$('#package-modal').addClass('active');
+	});
+
+	$('[aria-label="Close"], #close-package-modal-btn, #close-qr-modal-btn').on('click', function () {
+		var modal = $(this).closest('.modal');
+		if (modal.hasClass('active')) {
+			modal.removeClass('active');
+		}
+	});
+
+	// show qr code
+	$('#show-qr').on('click', function(e) {
+		$('#qr-modal').addClass('active');
+	});
+</script>

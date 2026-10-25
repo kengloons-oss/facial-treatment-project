@@ -1,0 +1,376 @@
+﻿@{
+	dynamic User = Helpers.GetUser();
+
+	if (User.UserRole == "staff")
+	{
+		Layout = "_StaffLayout";
+	}
+
+	ViewBag.Title = "Profile | Capture Photo";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Profile", "/User/Profile"),
+		new KeyValuePair<string, string>("Capture Photo", null)
+	};
+}
+
+<style>
+	#canvas {
+		display: none;
+	}
+
+	#videoElement {
+		width: 500px;
+		height: 420px;
+		border: 1px solid black;
+		display: block;
+	}
+
+	#capturedPhoto {
+		display: none;
+		width: 500px; /* Initial width */
+		height: 420px; /* Initial height */
+		border: 1px solid black;
+		position: relative;
+		object-fit: contain; /* Maintain aspect ratio */
+	}
+
+	#previewCropped {
+		display: none;
+		width: 300px; /* Final square size after cropping */
+		height: 300px; /* Final square size */
+		border: 1px solid black;
+		position: relative;
+		object-fit: cover; /* Ensure image fills the square */
+	}
+
+	#recapturePhoto, #cropPhoto, #recropPhoto, #rotatePhoto, #savePhoto {
+		display: none;
+		margin-top: 10px;
+	}
+
+	.action-button {
+		margin: 5px;
+	}
+
+	#cropArea {
+		position: absolute;
+		border: 3px dashed #ff0000;
+		display: none;
+		cursor: move;
+		z-index: 10;
+	}
+
+	#previewCropped {
+		margin-top: 10px;
+		display: none;
+	}
+</style>
+
+<div class="container">
+	<div class="columns">
+		<!-- left-side -->
+		<div class="formformat column col-6 col-sm-12 card my-single-card">
+			<div class="card-header">
+				<div class="card-title h5">
+					<!-- Back Button -->
+					<button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+					<!-- Page Title -->
+					Capture Photo
+				</div>
+
+				<div class="card-body my-pagecard-body">
+					<!-- Video element to display the live webcam stream -->
+					<video id="videoElement" autoplay></video>
+
+					<!-- Hidden Canvas to capture the image -->
+					<canvas id="canvas" width="500px" height="420px"></canvas>
+					<!-- Cropped Photo Preview -->
+					<img id="previewCropped" src="" alt="Cropped Photo Preview" />
+					<!-- Crop Box Reminder -->
+					<div id="cropReminder" style="display: none; color: red; font-weight: bold;">
+						You can drag and resize the crop box.
+					</div>
+					<br>
+					<div class="capturebtnbox">
+						<!-- Button to Capture Photo -->
+						<button id="capturePhoto" class="action-button" type="button"><i class="fa-solid fa-camera"></i>Capture Photo</button>
+					</div>
+					<!-- Display Captured Photo -->
+					<div style="position: relative;">
+						<img id="capturedPhoto" src="" alt="Captured Photo" />
+						<div id="cropArea"></div>
+					</div>
+
+					<!-- Actions after capturing -->
+
+					<button id="recapturePhoto" class="action-button">
+						<i class="fa-solid fa-camera-rotate"></i>Recapture Photo
+					</button>
+					<button id="cropPhoto" class="action-button">
+						<i class="fa-solid fa-crop-simple"></i> Crop Photo
+					</button>
+					<div class="capturebtnbox">
+						<!-- Actions after cropping -->
+						<button id="recropPhoto" class="action-button">Recrop Photo</button>
+						<button id="rotatePhoto" class="action-button">Rotate Photo</button>
+
+						<!-- Final actions -->
+						<button id="savePhoto" class="action-button">Save Photo</button>
+						<button id="cancel" class="cancel-button" type="button">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+	$(document).ready(function () {
+		let stream;
+		let croppedImageData = ''; // Variable to hold the cropped image data
+		let rotationAngle = 0; // Track the rotation angle
+		const canvas = $('#canvas')[0];
+		const context = canvas.getContext('2d');
+		const video = $('#videoElement')[0];
+		const cropArea = $('#cropArea');
+		const previewCropped = $('#previewCropped');
+		let originalImageData = '';  // To store the original captured photo
+		$('#cropReminder').hide();
+
+
+		// Start webcam stream
+		navigator.mediaDevices.getUserMedia({ video: true })
+			.then(function (mediaStream) {
+				stream = mediaStream;
+				video.srcObject = stream;
+			})
+			.catch(function (err) {
+				console.error('Error accessing webcam:', err);
+			});
+
+		// Capture the photo
+		$('#capturePhoto').click(function (event) {
+			event.preventDefault();
+			context.drawImage(video, 0, 0, canvas.width, canvas.height);
+			originalImageData = canvas.toDataURL('image/jpeg', 1.0);  // Save the original image data
+			stream.getTracks().forEach(track => track.stop());
+			$('#videoElement, #capturePhoto').hide();
+			$('#capturedPhoto').attr('src', originalImageData).show();  // Show the original captured photo
+
+			$('#recapturePhoto, #cropPhoto, #cropReminder').show();
+			initCrop();
+		});
+
+
+		// Crop the photo
+		function initCrop() {
+			const capturedPhoto = $('#capturedPhoto');
+			cropArea.show().css({
+				width: '150px',  // Default square width
+				height: '150px',  // Default square height
+				top: '60px',  // Default position
+				left: '60px',  // Default position
+			}).draggable({
+				containment: capturedPhoto,
+				drag: function (event, ui) {
+					const parentWidth = capturedPhoto.width();
+					const parentHeight = capturedPhoto.height();
+					const cropWidth = cropArea.width();
+					const cropHeight = cropArea.height();
+
+					// Limit the right boundary
+					if (ui.position.left + cropWidth > parentWidth) {
+						ui.position.left = parentWidth - cropWidth;
+					}
+
+					// Limit the bottom boundary
+					if (ui.position.top + cropHeight > parentHeight) {
+						ui.position.top = parentHeight - cropHeight;
+					}
+				}
+			}).resizable({
+				aspectRatio: 1,
+				containment: capturedPhoto,
+				minWidth: 50,
+				minHeight: 50,
+				resize: function (event, ui) {
+					const parentWidth = capturedPhoto.width();
+					const parentHeight = capturedPhoto.height();
+
+					if (ui.position.left + ui.size.width > parentWidth) {
+						ui.size.width = parentWidth - ui.position.left;
+						ui.size.height = ui.size.width;
+					}
+
+					if (ui.position.top + ui.size.height > parentHeight) {
+						ui.size.height = parentHeight - ui.position.top;
+						ui.size.width = ui.size.height;
+					}
+				}
+			});
+		}
+
+		// After cropping logic
+		$('#cropPhoto').click(function () {
+		const cropWidth = cropArea.width();
+		const cropHeight = cropArea.height();
+		const cropX = cropArea.position().left;
+		const cropY = cropArea.position().top;
+
+		const capturedPhoto = $('#capturedPhoto');
+		const scaleX = canvas.width / capturedPhoto.width();
+		const scaleY = canvas.height / capturedPhoto.height();
+
+		const adjustedX = cropX * scaleX;
+		const adjustedY = cropY * scaleY;
+
+		// Calculate scaled crop width and height
+		const adjustedCropWidth = cropWidth * scaleX;
+		const adjustedCropHeight = cropHeight * scaleY;
+
+		// Ensure canvas is square and matches the cropped area
+		const squareSize = Math.min(adjustedCropWidth, adjustedCropHeight);
+		canvas.width = squareSize;
+		canvas.height = squareSize;
+
+		// Clear the canvas and draw the cropped image
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		context.drawImage(
+			capturedPhoto[0], // Original image
+			adjustedX, // Start X
+			adjustedY, // Start Y
+			adjustedCropWidth, // Crop width (scaled)
+			adjustedCropHeight, // Crop height (scaled)
+			0, // Destination X on canvas
+			0, // Destination Y on canvas
+			canvas.width, // Destination width (canvas size)
+			canvas.height // Destination height (canvas size)
+		);
+
+		// Get the cropped image data URL
+		croppedImageData = canvas.toDataURL('image/jpeg', 1.0);
+
+		// Hide crop UI, display cropped preview
+		$('#cropPhoto, #capturedPhoto, #cropReminder').hide();
+		previewCropped.attr('src', croppedImageData).show();
+
+		// Show save and recrop options
+		$('#recropPhoto, #rotatePhoto, #savePhoto').show();
+		cropArea.hide();
+	});
+
+		// Recrop the original photo
+		$('#recropPhoto').click(function () {
+			$('#capturedPhoto').attr('src', originalImageData).show();
+
+			// Reset canvas and draw the original image
+			canvas.width = 500;
+			canvas.height = 420;
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			context.drawImage($('#capturedPhoto')[0], 0, 0, canvas.width, canvas.height);
+
+			cropArea.show();
+			$('#cropPhoto').show();
+			$('#recropPhoto, #rotatePhoto, #savePhoto').hide();
+			previewCropped.hide();
+			initCrop();  // Reinitialize cropping functionality
+		});
+
+		// Rotate photo logic
+		$('#rotatePhoto').click(function () {
+			rotationAngle = (rotationAngle + 90) % 360; // Increment rotation by 90 degrees
+
+			// Create a temporary canvas to apply rotation
+			const tempCanvas = document.createElement('canvas');
+			const tempContext = tempCanvas.getContext('2d');
+
+			// Adjust canvas size based on rotation
+			if (rotationAngle === 90 || rotationAngle === 270) {
+				tempCanvas.width = canvas.height;
+				tempCanvas.height = canvas.width;
+			} else {
+				tempCanvas.width = canvas.width;
+				tempCanvas.height = canvas.height;
+			}
+
+			// Apply rotation transformation
+			tempContext.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+			tempContext.rotate((rotationAngle * Math.PI) / 180);
+			tempContext.drawImage(
+				canvas,
+				-canvas.width / 2,
+				-canvas.height / 2,
+				canvas.width,
+				canvas.height
+			);
+
+			// Update the main canvas and preview with the rotated image
+			canvas.width = tempCanvas.width;
+			canvas.height = tempCanvas.height;
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			context.drawImage(tempCanvas, 0, 0);
+
+			// Update the cropped preview
+			const rotatedImageData = canvas.toDataURL('image/jpeg', 1.0);
+			previewCropped.attr('src', rotatedImageData);
+
+			// Update the croppedImageData to the rotated version
+			croppedImageData = rotatedImageData;
+		});
+
+		// Recapture the photo
+		$('#recapturePhoto').click(function () {
+			location.reload();
+		});
+
+		// Finalize and save the cropped photo
+		$('#savePhoto').click(function () {
+			// Upload the cropped photo directly using the stored cropped image data
+			uploadImage(croppedImageData);
+		});
+
+		// Save the cropped photo function (same as before)
+		function uploadImage(imageData) {
+		$.ajax({
+			type: 'POST',
+			url: '/User/CapturePhoto',
+			data: { image: imageData }, // Send the base64 image string
+			success: function (response) {
+				if (response.success) {
+					
+					Swal.fire({
+						title: "Capture Success",
+						text: "Remember to click save in profile to complete update profile picture.",
+						icon: "success",
+						showDenyButton: false,
+						showCancelButton: false,
+						confirmButtonText: "OK"
+					}).then((result) => {
+						window.location.href = "/User/Profile";
+
+					});
+				} else {
+					console.error(response.message);
+				}
+			},
+			error: function (error) {
+				console.error(error);
+			}
+		});
+	}
+
+
+
+		// Cancel the operation
+		$('#cancel').click(function () {
+			stream.getTracks().forEach(track => track.stop());
+
+			window.location.href = "/User/Profile";
+
+		});
+	});
+</script>

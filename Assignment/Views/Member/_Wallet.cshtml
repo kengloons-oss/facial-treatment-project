@@ -1,0 +1,92 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<dynamic>
+
+@{
+    string[] TransactionFields = { "Type" ,"Amount", "FreeCredit", "CreditBefore", "CreditAfter", "Date" };
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+    @Model.Count() of @Model.TotalItemCount record(s) &nbsp;&nbsp;| &nbsp;
+    Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+    <thead>
+        <tr>
+            @foreach (var field in TransactionFields)
+            {
+                string direction = "asc";
+                string className = "";
+                string sortIcon = "desc";
+
+                if (field == ViewBag.SortOrder)
+                {
+                    direction = ViewBag.Dir == "desc" ? "asc" : "desc";
+                    className = ViewBag.Dir;
+                    sortIcon = direction == "asc" ? "fa-sort-up" : "fa-sort-down";
+                }
+
+                <th class="table_headers">
+                    <a data-ajax="true"
+                       data-ajax-update="#target"
+                       data-ajax-loading="#loader"
+                       href="?filterMonth=@ViewBag.FilterMonth&sort=@field&dir=@direction&page_items=@ViewBag.Page_items&page=@ViewBag.CurrentPage"
+                       class="@className">
+                        @field <i class='fas @sortIcon'></i>
+                    </a>
+                </th>
+            }
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var transaction in Model)
+        {
+            <tr>
+                <td>@transaction.RecordType</td>
+                <td class="@((transaction.AdjustedAmount > 0 ? "positive" : "negative"))">
+                    @(transaction.AdjustedAmount > 0 ? "+RM" : "-RM")@Math.Abs(transaction.AdjustedAmount).ToString("N2")
+                </td>
+                <td>@transaction.FreeCredit</td>
+                <td>@transaction.CreditBefore</td>
+                <td>@transaction.CreditAfter</td>
+                <td>@transaction.Date</td> <!-- Date is now last -->
+            </tr>
+        }
+
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6">No transactions found.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav class="admin-pager">
+    @{
+        var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+
+        options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+        options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+        options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+        options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+        var ajaxOptions = new AjaxOptions
+            {
+                HttpMethod = "get",
+                UpdateTargetId = "target",
+                LoadingElementId = "#loader",
+            };
+    }
+    @Html.PagedListPager(
+            Model,
+            p => $"?filterMonth={ViewBag.FilterMonth}&sortBy={ViewBag.SortOrder}&dir={ViewBag.Dir}&page_items={ViewBag.Page_items}&page={p}",
+            PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+            )
+</nav>

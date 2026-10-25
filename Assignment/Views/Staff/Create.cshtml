@@ -1,0 +1,248 @@
+﻿@model StaffPersonVM
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Staff | Create";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Staff", "/Staff/List"),
+		new KeyValuePair<string, string>("Create", null)
+	};
+}
+
+<form method="post" class="" enctype="multipart/form-data">
+	<div class="container card my-pagecard">
+		<!-- container card (got border line) -->
+		<div class="columns">
+			<!-- con2 -->
+			<!-- left-side -->
+			<div class="formformat column col-6 col-sm-12">
+				<div class="card-header">
+					<div class="card-title h5">
+						<!-- Back Button -->
+						<button class="topleft-back" type="button" data-get="/Staff/List" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+						<!-- Page Title -->
+						Create Staff
+					</div>
+				</div>
+
+				<div class="card-body my-pagecard-body">
+					<div asp-validation-summary="ModelOnly"></div>
+
+					<input type="hidden" asp-for="Staff.Id" />
+
+					<!-- Avatar -->
+					<div class="form-group">
+						<label class="upload">
+							<img src="/images/user/defaultProfile.png">
+
+							<label asp-for="Person.Avatar" class="form-label" style="display:none;"></label>
+							<div class="upload-insidelayout columns col-gapless">
+								<div class="column col-2">
+									<button class="capture-photo-btn " type="button" uk-tooltip="title: Drop or select photo; pos: top-right">
+										<i class="fa-solid fa-camera-retro"></i>
+									</button>
+								</div>
+
+								<div class="column col-10">
+									<div class="upload-inputbox">
+										<label for="file-upload" class="file-upload-label">
+											<i class="fa-solid fa-cloud-arrow-up"></i> Attach avatar by dropping it here, or <span class="select-text">selecting one</span>.
+										</label>
+										<input asp-for="Person.Upload_image" id="file-upload" type="file" accept="image/jpeg,image/png,image/jpg" class="file-input">
+									</div>
+								</div>
+							</div>
+
+						</label>
+						<span asp-validation-for="Person.Upload_image" class="form-input-hint error-message"></span>
+					</div>
+
+					<div class="uk-grid">
+						<div class="uk-width-1-3">
+							<!-- Staff Id -->
+							<div class="form-group">
+								<label asp-for="Staff.Id" class="form-label">Staff ID:</label>
+								<div style="padding-bottom:0.5rem;">@Helpers.FormatId("SF", ViewBag.New_id)</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Gender -->
+					<div class="form-group">
+						<label asp-for="Person.Gender" class="form-label" style="padding-bottom:0;">Gender:</label>
+						<div class="input-group">
+							<label class="form-radio">
+								<input type="radio" asp-for="Person.Gender" id="Person_Gender_Male" name="Person.Gender" value="M">
+								<i class="form-icon"></i>Male
+							</label>
+							<label class="form-radio">
+								<input type="radio" asp-for="Person.Gender" id="Person_Gender_Female" name="Person.Gender" value="F">
+								<i class="form-icon"></i>Female
+							</label>
+						</div>
+						<span asp-validation-for="Person.Gender" class="form-input-hint error-message"></span>
+					</div>
+
+					<!-- Name -->
+					<div class="form-group">
+						<label asp-for="Person.Name" class="form-label">Name:</label>
+						<input asp-for="Person.Name" type="text" class="form-input name" data-trim />
+						<span asp-validation-for="Person.Name" class="form-input-hint error-message"></span>
+					</div>
+				</div> <!-- end card-body -->
+			</div> <!-- end left-side -->
+
+			<!-- right-side -->
+			<div class="formformat-right column col-6 col-sm-12 ">
+				<div class="uk-grid">
+					<div class="uk-width-1-3">
+						<!-- Tel_no -->
+						<div class="form-group">
+							<label asp-for="Person.Tel_no" class="form-label">Tel_no:</label>
+							<input asp-for="Person.Tel_no" type="tel" class="form-input tel_no" data-trim />
+							<span asp-validation-for="Person.Tel_no" class="form-input-hint error-message"></span>
+						</div>
+					</div>
+
+					<div class="uk-width-expand" style="padding-left: 20px;">
+						<!-- Address -->
+						<div class="form-group">
+							<label asp-for="Staff.Address" class="form-label">Address:</label>
+							<textarea asp-for="Staff.Address" class="form-input address" data-trim></textarea>
+							<span asp-validation-for="Staff.Address" class="form-input-hint error-message"></span>
+						</div>
+					</div>
+				</div>
+
+
+				<!-- Email -->
+				<div class="form-group">
+					<label asp-for="Person.Email" class="form-label">Email:</label>
+					<input asp-for="Person.Email" type="email" class="form-input email-c" data-trim />
+					<span asp-validation-for="Person.Email" class="form-input-hint error-message"></span>
+				</div>
+
+				<!-- Password -->
+				<div class="form-group">
+					<label asp-for="Person.Password" class="form-label">Password:</label>
+					<input asp-for="Person.Password" class="form-input pass" type="password" data-trim />
+					<span asp-validation-for="Person.Password" class="form-input-hint error-message"></span>
+				</div>
+
+				<!-- Salary -->
+				<div class="form-group">
+					<label asp-for="Staff.Salary" class="form-label">Current Salary:</label>
+					<input asp-for="Staff.Salary" type="number" step="0.01" class="form-input salary" data-trim />
+					<span asp-validation-for="Staff.Salary" class="form-input-hint error-message"></span>
+				</div>
+
+				<!-- Buttons -->
+				<div class="text-right" style="padding-top:16px;">
+					<button type="reset" class="btn btn-secondary">Reset</button>
+					<button id="submitButton" type="submit" class="btn btn-primary">Create</button>
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+</form>
+
+@section foot {
+	<script>
+		var bar = document.getElementById('js-progressbar');
+
+		$(document).ready(function () {
+
+
+			// Form submit
+			$('form').submit(function (event) {
+				event.preventDefault();
+
+				// Trigger blur event to check and display
+				$('.name, .email, .pass, .tel_no, .address, .salary').trigger('blur');
+				$('input[name="Person.Gender"]').trigger('change');
+
+				// Add a short delay to make sure the blur event is processed
+				setTimeout(() => {
+					// Check for form errors before submission
+					if (!nameErr && !emailErr && !currentPassErr && !passErr && !confirmPassErr && !telErr && !genderErr && !addressErr && !salaryErr) {
+
+						// Submit the form when all field is valid
+						HTMLFormElement.prototype.submit.call(this);
+					}
+					else {
+					   console.log("NameErr: " + nameErr);
+					   console.log("EmailErr: " + emailErr);
+					   console.log("currentPassErr: " + currentPassErr);
+					   console.log("passErr: " + passErr);
+					   console.log("confirmPassErr: " + confirmPassErr);
+					   console.log("telErr: " + telErr);
+					   console.log("genderErr: " + genderErr);
+					   console.log("addressErr: " + addressErr);
+					   console.log("salaryErr: " + salaryErr);
+					}
+				}, 100); // 100ms delay to ensure blur event has time to process
+			});
+
+		});
+
+		UIkit.upload('.js-upload', {
+
+			url: '',
+			multiple: true,
+
+			beforeSend: function () {
+				console.log('beforeSend', arguments);
+			},
+			beforeAll: function () {
+				console.log('beforeAll', arguments);
+			},
+			load: function () {
+				console.log('load', arguments);
+			},
+			error: function () {
+				console.log('error', arguments);
+			},
+			complete: function () {
+				console.log('complete', arguments);
+			},
+
+			loadStart: function (e) {
+				console.log('loadStart', arguments);
+
+				bar.removeAttribute('hidden');
+				bar.max = e.total;
+				bar.value = e.loaded;
+			},
+
+			progress: function (e) {
+				console.log('progress', arguments);
+
+				bar.max = e.total;
+				bar.value = e.loaded;
+			},
+
+			loadEnd: function (e) {
+				console.log('loadEnd', arguments);
+
+				bar.max = e.total;
+				bar.value = e.loaded;
+			},
+
+			completeAll: function () {
+				console.log('completeAll', arguments);
+
+				setTimeout(function () {
+					bar.setAttribute('hidden', 'hidden');
+				}, 1000);
+
+				alert('Upload Completed');
+			}
+
+		});
+	</script>
+}

@@ -1,0 +1,95 @@
+﻿@model Assignment.Models.ReferralReward
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Referral Reward | " + Model.Code;
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Referral Reward", "/ReferralReward/ReferralRewardList"),
+		new KeyValuePair<string, string>("Detail", null)
+	};
+
+}
+
+<form id="editForm">
+    <div class="container">
+        <div class="columns">
+            <div class="formformat column col-6 col-sm-12 card my-single-card">
+                <div class="card-header">
+                    <div class="card-title h5">
+                        <button class="topleft-back" type="button" data-get="/ReferralReward/ReferralRewardList"
+                                uk-tooltip="title: Back to Previous Section; pos: top-left;">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button> &nbsp;
+                        Referral Reward @Model.Code
+                    </div>
+                </div>
+                <div class="card-body my-pagecard-body">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+
+                    <div class="form-group">
+                        <label asp-for="Num_of_referral" class="form-label">Number of Referral (pax): </label>
+                        <input asp-for="Num_of_referral" type="number" min="1" max="9999" step="1" class="form-input num_of_reward-d" />
+                        <span asp-validation-for="Num_of_referral" class="form-input-hint error-message"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Free_credit" class="form-label">Free Credit (Meow Wallet Credit): </label>
+                        <input asp-for="Free_credit" type="number" min="1" max="999999.99" step="0.01" class="form-input free_credit" />
+                        <span asp-validation-for="Free_credit" class="form-input-hint error-message"></span>
+                    </div>
+
+                    <div class="form-group text-right">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button id="submitButton" type="button" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#submitButton').on('click', function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const formData = $('#editForm').serialize(); // Serialize form data
+
+            $.ajax({
+                url: '/ReferralReward/Edit', // Controller action URL
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: response.message, // Show success message from TempData
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '/ReferralReward/ReferralRewardList'; // Redirect on success
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message, // Show error message from TempData
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An unexpected error occurred. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        });
+    });
+</script>
+

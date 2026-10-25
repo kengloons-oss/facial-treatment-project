@@ -1,0 +1,366 @@
+﻿@{
+    ViewData["Title"] = "Cart";
+
+    // Breadcrumb data
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Package", "/Package/List"),
+        new KeyValuePair<string, string>("Your Cart", "/Package/Cart")
+    };
+}
+
+<form id="cartForm" method="post" action="@Url.Action("Checkout")">
+    <div class="container card my-pagecard" style="padding-left:22px;"><!-- container card (got border line) -->
+        <div class="columns">
+            <!-- left-side -->
+            <div class="formformat column col-8 col-sm-12">
+                <div asp-validation-summary="ModelOnly"></div>
+
+                <div class="card-header">
+                    <div class="card-title h5">
+                        <!-- Back Button -->
+                        <button class="topleft-back" type="button" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+                        <!-- Page Title -->
+                        Your Cart
+                    </div>
+                </div>
+
+                <div class="card-body my-pagecard-body">
+                    <div id="cart-item-list"><!-- cart-item-list -->
+                        <div class="cart-item check_all">
+							<input type="checkbox" id="selectAll" class="cart-select" />
+                            <span class="label-selectall">Select All</span>
+                            <span id="cart-count">(0)</span><!-- Num. Item Selected -->
+                            <div class="cart-action"> 
+                                <button id="deleteSelectedItems">Remove Selected Item(s) <i class="fa-regular fa-trash-can"></i></button>
+                            </div>
+                        </div>
+
+                         @foreach (var item in Model) 
+                         { 
+                        <div class="cart-item" id="item-@item.Id" data-discountedtotal="@item.DiscountedTotal" data-taxamount="@item.TaxAmount" data-finaltotal="@item.FinalTotal">
+
+                            <div class="cart-con-1"><!-- cart-con-1 -->
+                                <div class="cart-select-section">
+                                    <input type="checkbox" class="cart-select" name="selectedItems" value="@item.Id" />
+                                </div>
+                                <div class="cart-img">
+                                        @if (!string.IsNullOrEmpty(item.PhotoPath)) 
+                                        { 
+                                            <img src="/images/package/cover/@item.PhotoPath" /> 
+                                        } 
+                                        else 
+                                        {
+                                            <img src="/images/package/defaultImage.png" />
+                                        } 
+                                </div>
+                            </div><!-- end cart-con-1 -->
+
+                            <div class="cart-con-2"><!-- cart-con-2 -->
+                                <div class="cart-con-row1">
+                                    <div class="cart-itemname">
+                                        <span class="label_id">@item.Code</span> -
+                                        <span class="label_name">@item.Name</span> - 
+                                        <span class="label_price">RM @item.Price</span>
+                                    </div>
+
+                                    <div class="cart-action">
+                                            <button class="remove b_remove remove-cart-item" data-id="@item.Id" title="Remove Item">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="cart-con-row2">
+                                    <span class="label-text cart-item-detail">Total Treatment: @ViewBag.TotalTreatments</span>
+                                    <span class="label-text cart-item-detail2">Service Included: @ViewBag.ServiceIncluded</span>
+                                </div>
+
+                            </div><!-- end cart-con-2 -->
+                        </div>
+                        } 
+                        
+                        @if (Model.Count == 0) {
+                            <p>It looks like you haven't added anything to your cart yet. Browse our store and find something you love!</p>
+                        }
+                    </div><!-- end cart-item-list -->
+                </div><!-- end card-body -->
+            </div><!-- end left-side -->
+
+            <!-- right-side -->
+            <div class="formformat-right column col-4 col-sm-12 ">
+
+                <div class="container grid-lg responsive-text1 calculatepreview" style="margin-top:30px;">
+                    <div class="columns">
+                        <div class="column col-12">
+                            <!-- Subtotal without Discount -->
+                            <div class="columns" style="margin-top:0.3rem">
+                                <div class="column col-7 text-left">
+                                    Subtotal Amount:
+                                </div>
+                                <div class="column col-5 text-right">
+                                    RM<span id="subtotalWithoutDiscount">0.00</span>
+                                </div>
+                            </div>
+                            <!-- Total Tax -->
+                            <div class="columns" style="margin-top:0.3rem">
+                                <div class="column col-7 text-left">
+                                    Tax Charge (@ViewBag.TaxRate%) :
+                                </div>
+                                <div class="column col-5 text-right">
+                                    RM<span id="totalTax">0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Member Discount Amount -->
+                            <div class="columns" style="margin-top:0.3rem">
+                                <div class="column col-7 text-left">
+                                    Member Discount Rate (@ViewBag.DiscountRate %):
+                                </div>
+                                <div class="column col-5 text-right">
+                                    RM<span id="totalAmount">0.00</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Final Total -->
+                            <div class="columns" style="margin-top:0.3rem">
+                                <div class="column col-7 text-left">
+                                    Total Amount :
+                                </div>
+                                <div class="column col-5 text-right">
+                                    RM<span id="grandTotal">0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Checkout Button -->
+                            @if (ViewBag.HasItems != null && ViewBag.HasItems)
+                            {
+                                <div class="text-right" style="padding-top:16px; margin-right:0px;">
+                                    <button type="button" id="checkoutButton" class="btn btn-primary">Checkout <i class="fa-solid fa-angles-right"></i></button>
+                                </div>
+                            }
+                            else
+                            {
+                                <p>Your cart is empty.</p>
+                            }
+                            
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end right-side -->
+
+        </div><!-- end columns -->
+    </div><!-- end container card -->
+    
+</form>
+
+<script>
+    $(document).ready(function () {
+        // Function to calculate the total including discounts and taxes
+        function calculateSelectedItemsTotal() {
+            var totalAmount = 0;
+            var totalTax = 0;
+            var grandTotal = 0;
+            var subtotalWithoutDiscount = 0;
+
+            // Loop through each selected item and calculate totals
+            $('input[name="selectedItems"]:checked').each(function () {
+                var itemId = $(this).val();
+                var discountedTotal = parseFloat($(`#item-${itemId}`).data('discountedtotal'));
+                var taxAmount = parseFloat($(`#item-${itemId}`).data('taxamount'));
+                var finalTotal = parseFloat($(`#item-${itemId}`).data('finaltotal'));
+                var price = parseFloat($(`#item-${itemId}`).find('.label_price').text().replace('RM', '').trim()); // Get the original price without discount
+
+                totalAmount += discountedTotal;
+                totalTax += taxAmount;
+                grandTotal += finalTotal;
+                subtotalWithoutDiscount += price; // Add price without discount
+            });
+
+            // Store the calculated values in localStorage
+            localStorage.setItem('totalAmount', totalAmount.toFixed(2));
+            localStorage.setItem('totalTax', totalTax.toFixed(2));
+            localStorage.setItem('grandTotal', grandTotal.toFixed(2));
+            localStorage.setItem('subtotalWithoutDiscount', subtotalWithoutDiscount.toFixed(2));
+
+            // Update the total display
+            $('#totalAmount').text(totalAmount.toFixed(2));
+            $('#totalTax').text(totalTax.toFixed(2));
+            $('#grandTotal').text(grandTotal.toFixed(2));
+            $('#subtotalWithoutDiscount').text(subtotalWithoutDiscount.toFixed(2)); // Update the subtotal without discount
+
+            // Update the Member Discount Rate display with zero if discount rate is 0%
+            if (@ViewBag.DiscountRate == 0) {
+                $('#totalAmount').text("0.00");  // Set totalAmount to 0.00 if discount rate is 0%
+            } else {
+                $('#totalAmount').text(totalAmount.toFixed(2)); // Otherwise, set it as the calculated discount amount
+            }
+        }
+
+        // Function to update the count of selected items
+        function updateSelectedItemCount() {
+            var selectedCount = $('input[name="selectedItems"]:checked').length;
+            $('#cart-count').text(`(${selectedCount})`); // Update the count display
+        }
+
+        // Attach event listener to individual item checkboxes
+        $('input[name="selectedItems"]').change(function () {
+            updateSelectedItemCount(); // Update count when selection changes
+            calculateSelectedItemsTotal(); // Recalculate totals
+        });
+
+        // Handle Select All checkbox
+        $('#selectAll').change(function () {
+            var isChecked = $(this).is(':checked');
+            $('input[name="selectedItems"]').prop('checked', isChecked);
+            updateSelectedItemCount(); // Update count when Select All changes
+            calculateSelectedItemsTotal(); // Recalculate totals
+        });
+
+        // Update Select All checkbox state if individual checkboxes change
+        $('input[name="selectedItems"]').change(function () {
+            var totalCheckboxes = $('input[name="selectedItems"]').length;
+            var checkedCheckboxes = $('input[name="selectedItems"]:checked').length;
+            $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
+        });
+
+        // Attach event listener to remove button
+        $('.remove-cart-item').click(function () {
+            var cartItemId = $(this).data('id');
+            $.ajax({
+                url: '/Package/DeleteCart',
+                type: 'POST',
+                data: { packageId: cartItemId },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(function() {
+                            // Wait for 2 seconds before reloading
+                            setTimeout(function() {
+                                location.reload(); // Reload the page after 2 seconds
+                            }, 2000); // 2000ms = 2 seconds
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while trying to remove the item.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        });
+
+        // Handle batch delete
+        $('#deleteSelectedItems').click(function () {
+            var selectedItems = [];
+
+            // Get selected items' IDs
+            $('input[name="selectedItems"]:checked').each(function () {
+                selectedItems.push($(this).val());
+            });
+
+            // If no items are selected, show a message
+            if (selectedItems.length === 0) {
+                Swal.fire({
+                    title: 'Warning!',
+                    text: 'Please select at least one item to delete.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Send AJAX request to delete selected items
+            $.ajax({
+                url: '/Package/DeleteSelectedCartItems',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(selectedItems),
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(function() {
+                            // Wait for 2 seconds before reloading
+                            setTimeout(function () {
+                                location.reload(); // Reload the page after 2 seconds
+                            }, 2000); // 2000ms = 2 seconds
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while trying to delete items.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        });
+
+        // Handle the checkout process
+        $('#checkoutButton').click(function () {
+            var selectedItems = [];
+
+            // Get selected items' IDs from the checkboxes
+            $('input[name="selectedItems"]:checked').each(function () {
+                selectedItems.push($(this).val());
+            });
+
+            // If no items are selected, show a message
+            if (selectedItems.length === 0) {
+                Swal.fire({
+                    title: 'Warning!',
+                    text: 'Please select at least one item to proceed with checkout.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Pass selected items to the hidden form input
+            $('#selectedItems').val(selectedItems.join(','));
+
+            // Submit the form to the server
+            $('#cartForm').submit();
+        });
+
+        // Ensure count updates on page load
+        updateSelectedItemCount();
+
+        // Check if calculation values are stored in localStorage and load them
+        if (localStorage.getItem('totalAmount')) {
+            $('#totalAmount').text(localStorage.getItem('totalAmount'));
+            $('#totalTax').text(localStorage.getItem('totalTax'));
+            $('#grandTotal').text(localStorage.getItem('grandTotal'));
+            $('#subtotalWithoutDiscount').text(localStorage.getItem('subtotalWithoutDiscount'));
+        }
+    });
+</script>
+

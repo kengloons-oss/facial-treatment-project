@@ -1,0 +1,9 @@
+﻿@model List<Assignment.Models.Package>
+
+<h3>Product</h3>
+<div class='search-product-container'>
+@foreach (var package in Model)
+{
+    <div class=' found_product' product_id='@package.Id'><i class='fa-solid fa-arrow-right'></i>@package.Name</div>
+}
+</div>

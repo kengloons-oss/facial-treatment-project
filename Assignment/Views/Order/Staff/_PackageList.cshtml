@@ -1,0 +1,130 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<Package>
+
+@{
+	var member_discount = ViewBag.Member_discount;
+}
+
+@foreach (var package in Model)
+{
+	@* var packagePhoto = package.PackagePhotos.Count() == 0 ? "default" : package.PackagePhotos[0].Path; *@
+	var packagePhoto = package.PackagePhotos.Where(pp => pp.Type == 1).Select(pp => pp.Path).FirstOrDefault();
+
+	if (packagePhoto == null) {
+		packagePhoto = "../defaultImage.png";
+	}
+
+	<div class="cart-item">
+		<div class="cart-con-1">
+			<div class="cart-select-section form-group">
+				<div class="form-group">
+					@if (ViewBag.Member_id != "")
+					{
+						<label class="form-checkbox">
+							<input type="checkbox"
+								   class="cart-select"
+								   name="selectedItems"
+								   data-id="@package.Id"
+								   data-photo="@packagePhoto"
+								   data-name="@package.Name"
+								   data-price="@package.Price">
+							<i class="form-icon"></i>
+						</label>
+					}
+					else
+					{
+						<label class="form-checkbox">
+							<input type="checkbox"
+								   class="cart-select"
+								   name="selectedItems"
+								   data-id="@package.Id"
+								   data-photo="@packagePhoto"
+								   data-name="@package.Name"
+								   data-price="@package.Price"
+								   disabled>
+							<i class="form-icon"></i>
+						</label>
+					}
+				</div>
+			</div>
+			<div class="cart-img">
+				<img src="/images/package/cover/@packagePhoto" />
+			</div>
+		</div>
+
+		<div class="cart-con-2">
+			<div class="cart-con-row1">
+				<div class="cart-itemname">
+					<span class="label_id">@package.Code</span> -
+					<span class="label_name">@package.Name</span> -
+					<span class="label_price">RM @package.Price</span>
+				</div>
+
+				<div class="cart-action">
+					<div class="cart-action">
+						<button class="remove b_remove remove-cart-item detail-btn" data-id="@package.Id">View Detail</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+<nav class="admin-pager">
+	@{
+		var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+		options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+		options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+		options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+		options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+		var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "target",
+				LoadingElementId = "#loader",
+			};
+	}
+
+	@Html.PagedListPager(
+		Model,
+		p => $"?member_id={ViewBag.Member_id}&package_name={ViewBag.Package_name}&page={p}",
+		PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+	)
+</nav>
+
+<!-- Modal for selecting deactivated services -->
+<div id="package-modal" class="modal">
+	<a class="modal-overlay" aria-label="Close"></a>
+
+	<div class="modal-container">
+		<div class="modal-header">
+			<a class="btn btn-clear float-right" aria-label="Close" id="close-package-modal"></a>
+			<h5 class="modal-title">Package Details Of</h5>
+			<span id="package-name">xxxxx</span>
+		</div>
+		<div class="modal-body">
+			<div class="content my-adjustedmodal">
+				@* <p>Here are more details about the package...</p> *@
+				<ul id="package-content"></ul>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary btn-close" id="close-package-modal-btn">Close</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	var member_discount = parseFloat(@ViewBag.Member_discount);
+
+	$(document).ready(function() {
+		selected_packages.forEach(pkg => {
+			const selectButton = $(`.cart-select[data-id="${pkg.id}"]`);
+			selectButton.prop('checked', true);
+		});
+
+		updateSummary();
+	});
+</script>

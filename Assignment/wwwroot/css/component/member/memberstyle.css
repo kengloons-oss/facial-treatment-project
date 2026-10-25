@@ -1,0 +1,390 @@
+﻿/* "Package" Detail Showing */
+.productdetail-container {
+    display: flex;
+    flex-direction: column;
+}
+.productdetail-row {
+    display: flex;
+    width: 100%;
+}
+.productdetail-box {
+    height: 42vh; /* key */
+}
+.productdetail-box-left {
+    width: 30%;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+}
+.productdetail-box-right {
+    flex-grow: 1;
+}
+.productdetail-box-bottom {
+    width: 100%;
+    height: 60vh; /* key */
+    flex-grow: 1;
+}
+
+.product-showcase {
+    display: flex;
+    justify-content: center;
+}
+.thumbnails {
+    width: 110px; /* Adjust thumbnail width */
+    height: 295px;
+    overflow-y: scroll; /* Enable vertical scroll */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+    /* Hide scrollbar for Chrome, Safari, and Edge */
+    .thumbnails::-webkit-scrollbar {
+        display: none;
+    }
+/* Hide scrollbar for IE, Firefox */
+.thumbnails {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+.thumb {
+    margin-bottom: 5px; /* Reduced spacing */
+    cursor: pointer;
+    border: 1px solid #ccc;
+}
+    .thumb img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+.main-image {
+    position: relative;
+    width: 360px;
+    margin-left: 10px;
+}
+    .main-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border: 1px solid #ccc;
+    }
+.dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+.dot {
+    height: 10px;
+    width: 10px;
+    background-color: #cfcfcf;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+}
+    .dot:hover, .dot.active {
+        background-color: #ffffff;
+        border: 1px solid #000;
+    }
+.descCard {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 8px;
+    padding: 20px;
+}
+.descCard2 {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 8px;
+    padding: 20px;
+    margin-left:32px;
+}
+/* Ensures all the cards are displayed in a row */
+.imgCard {
+    flex: 1;
+}
+.descCard {
+    flex: 2;
+    max-width: 100%;
+}
+.spacereview {
+    flex: 1;
+    width: 120%;
+}
+#product_review {
+    flex: 2;
+    max-width: 30%;
+}
+/* For smaller screens, make them stack vertically */
+@media (max-width: 1200px) {
+    #content {
+        flex-wrap: wrap;
+    }
+
+    .imgCard,
+    .descCard,
+    #product_review {
+        max-width: 100%;
+    }
+}
+
+#product_review {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+}
+#review_content {
+    max-height: 200px; /* Set fixed height for scrolling */
+    overflow-y: auto;
+    padding-right: 10px;
+}
+.review_card {
+    margin-left: 10px;
+    border-radius: 5px;
+    padding: 1rem;
+    background-color: #dce6ff8a;
+    margin-bottom: 5px;
+}
+.ratings img {
+    width: 35px;
+    height: 35px;
+}
+.comment {
+    margin-top: 0px;
+}
+.comment_attachment .previewContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0px;
+}
+.preview > img {
+    width: 100px;
+    height: 100px;
+}
+#product_review {
+    display: flex;
+/*    flex-direction: column;*/
+    width: 100%;
+}
+#review_top_panel {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    justify-content: center;
+    background-color: #fff;
+    margin-bottom: 10px;
+    align-items: center; /* Aligns all items vertically */
+}
+#review-form{
+    width:100%;
+}
+.filter_tool {
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+}
+    .filter_tool:hover {
+        background-color: #ddd;
+    }
+    .filter_tool.selected {
+        background-color: #ccc;
+    }
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Spacing between label and select */
+}
+.descCard {
+    flex: 2;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 8px;
+}
+    .descCard label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+    }
+.spec {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 10px 20px; /* Row and column gaps */
+    margin-top: 20px;
+}
+    .spec label {
+        font-weight: bold;
+        vertical-align: central;
+    }
+    .spec p {
+        margin: 0;
+    }
+span.err {
+    grid-column: 1 / span 2;
+    color: blue;
+}
+#review_top_panel {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+    justify-content: space-around;
+    background-color: #fff;
+    margin-bottom: 10px;
+    align-items: center; /* Aligns all items vertically */
+}
+.afilter-card-body {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.card-filter-row, form#review-form {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2px;
+    padding: 20px;
+    background-color: #c8fff877;
+    border-radius: 8px;
+}
+    .card-filter-row label {
+        font-weight: bold;
+        margin-left: 10px;
+        font-size: 0.8rem;
+    }
+    .card-filter-row select {
+        padding: 5px;
+        border-radius: 4px;
+        margin-right: 10px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+    }
+
+@media (max-width: 768px) {
+    .card-filter-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* reference */
+.container-2 {
+    padding: 20px;
+    padding-top: 35px;
+}
+
+.reference-summary-bar-container {
+    position: relative;
+    width: 100%; 
+    
+}
+.progress-bar-wrapper {
+    position: relative;
+    background-color: #dfffff44;
+    height: 30px;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 10px rgba(132, 179, 224, 0.95);
+}
+.progress-bar {
+    background-color: #007bff;
+    height: 100%;
+    width: 0;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+.progress-separator {
+    position: absolute;
+    top: 0;
+    height: 30px;
+    width: 5px;
+    background-color: #4772ff6b; /* Line color */
+}
+.reference-content {
+    position: relative;
+    width: 100%;
+    margin-top: -5px;
+}
+.reference-item {
+    position: absolute;
+    top: 5px; /* Adjust based on progress bar height */
+    transform: translateX(-55%);
+    text-align: center;
+    width: 180px; /* Adjust based on desired width */
+}
+.reference-item span {
+    display: block;
+    font-size: 1rem;
+    color: #0306b1;
+}
+.refferalbtn{
+    padding-left: 5px;
+}
+.hover-tooltip {
+    position: absolute;
+    background: #fff;
+    border: 4px solid #ddd;
+    padding: 5px;
+    border-radius: 3px;
+    display: none;
+    font-size: .6rem;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+}
+.con-progress{
+    margin-top: 1rem;
+    padding: 2rem;
+    padding-bottom: 5rem;
+    border: 2px solid #007bff83;
+    box-shadow: 0 2px 10px rgba(132, 179, 224, 0.95);
+}
+.qrcodecon{
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+#qrcode {
+    width: 180px;
+    height: auto;
+}
+
+
+
+/* TOPUP, Meow-Wallet */
+.mw-container {
+    display: flex;
+    justify-content: flex-start;
+    padding: 0;
+    gap: 1rem;
+    background-color: transparent;
+}
+
+/* member review package */
+.review-item-photos-container img {
+    width: 100px; /* Set the desired width */
+    height: 100px; /* Set the desired height */
+    object-fit: cover; /* Ensure the image fits nicely within the dimensions */
+    pointer-events: none;
+}
+.image-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+.image-preview-container .image-preview-item img {
+    width: 80px; /* Set the desired width */
+    height: 80px; /* Set the desired height */
+    object-fit: cover; /* Ensure the image fits nicely within the dimensions */
+    pointer-events: none;
+}
+.adjust-upload-inputbox{
+    border-radius:10px;
+}

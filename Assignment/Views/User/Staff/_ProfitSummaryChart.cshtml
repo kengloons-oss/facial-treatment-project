@@ -1,0 +1,42 @@
+﻿@{
+	// profit summary chart
+	var profit_title = ViewBag.ProfitChartTitle;
+	var profit_labels = ViewBag.ProfitChartLabels;
+	var profit_data = ViewBag.ProfitChartData;
+}
+
+<canvas id="profit-summary-chart" class="chartwidthfilled"></canvas>
+
+<script>
+	$(document).ready(function() {
+	    // profit summary chart
+	    const labels = @Html.Raw(Json.Serialize(profit_labels));
+	    const data = @Html.Raw(Json.Serialize(profit_data));
+
+        var ctx = $('#profit-summary-chart')[0].getContext('2d');
+
+        var profitChart = new Chart(ctx, {
+            type: 'line', // The type of chart: line chart
+            data: {
+                    // Labels for the X-axis (months)
+                    labels: labels,
+                    datasets: [{
+                    label: "@profit_title", // Dataset label
+                    data: data, // Data points
+                    fill: false, // Disable filling under the line
+                    borderColor: 'rgba(75, 192, 192, 1)', // Line color
+                    tension: 0.1, // Line smoothness
+                }]
+            },
+            options: {
+                    responsive: true, // Make the chart responsive
+                    scales: {
+                        y: {
+                            beginAtZero: true // Make sure the Y-axis starts at zero
+                        }
+                    }
+                }
+            }
+        );
+	});
+</script>

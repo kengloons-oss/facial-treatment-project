@@ -1,0 +1,116 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Member | List";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Member", "/Member/List"),
+		new KeyValuePair<string, string>("List", null)
+	};
+
+	var User = Helpers.GetUser();
+}
+
+<form data-ajax="true"
+	  data-ajax-update="#target"
+	  data-ajax-loading="#loader"
+	  id="f">
+
+	<div class="container-filter ">
+		<div class="half">
+			<div class="card card-blue-shadow">
+				<div class="card-txtfield card-body ">
+					<label for="filter_level">Level: </label>
+					@Html.DropDownList("level", ViewBag.Membership_levels, null, new { id = "filter_level" })
+
+					<label for="filter_pageitems">Item Per Page: </label>
+					@Html.DropDownList("page_items", Helpers.page_items, null, new { id = "filter_pageitems" })
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="card-button-right">
+		@if (Helpers.isManager())
+		{
+			<button data-get="/Member/ImportMember" id="b_import">Import New Member</button>
+		}
+		<button data-get="/Member/Create" id="b_create">Create New Member</button>
+	</div>
+
+	<div class="search-container card-right-tb">
+		<div class="search-bar">
+			@Html.TextBox("name", "", new { type = "search", autofocus = "", id = "search", data_trim = "", placeholder = "Search Member Name...", @class = "search-input" })
+			<button id="search-button"><i class="fas fa-search"></i></button>
+		</div>
+	</div>
+</form>
+
+<div id="target">
+	<partial name="_MemberList" />
+</div>
+
+@section foot {
+	<script>
+		let timer = null;
+
+		// search-as-you-type feature
+		$('#search').on('input', e => {
+			clearTimeout(timer);
+			timer = setTimeout(() => $(e.target.form).submit(), 200);
+		});
+
+		$('#filter_level, #filter_pageitems').on('change', e => {
+			$(e.target.form).submit();
+		});
+
+		$(document).on('click', '.activate-btn', function (e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Activate Member",
+				text: 'Are you confirm to activate this member ' + 'MB' + id.toString().padStart(4, '0') + '?',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = '/Member/Activate/' + id;  // Construct the URL dynamically using the ID
+					const f = $('<form>').appendTo(document.body)[0];
+					f.method = 'post';
+					f.action = url;
+					f.submit();
+				}
+			});
+		});
+
+		$(document).on('click', '.deactivate-btn', function (e) {
+			e.preventDefault();
+
+			var id = $(this).data('id');  // Access the ID from the data-id attribute
+
+			Swal.fire({
+				title: "Deactivate Member",
+				text: 'Are you confirm to deactivate this member ' + 'MB' + id.toString().padStart(4, '0') + '?',
+				icon: 'warning', // You can use 'success', 'error', 'warning', 'info', or 'question'
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "Yes"
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = '/Member/Deactivate/' + id;  // Construct the URL dynamically using the ID
+					const f = $('<form>').appendTo(document.body)[0];
+					f.method = 'post';
+					f.action = url;
+					f.submit();
+				}
+			});
+		});
+	</script>
+}

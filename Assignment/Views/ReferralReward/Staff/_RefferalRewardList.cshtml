@@ -1,0 +1,118 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<ReferralReward>
+
+@{
+	string[] ReferralRewardFields = { "Id", "Num of Referral (Pax)", "Free Credit" };
+	bool isManager = Helpers.isManager();
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+@Html.Hidden("page", "", new { form = "f" })
+
+<div class="card-left-tb">
+	@Model.Count() of @Model.TotalItemCount record(s) &nbsp;&nbsp;| &nbsp;
+	Page @Model.PageNumber of @Model.PageCount
+</div>
+
+<table class="admin-table1">
+	<thead>
+		<tr>
+			@foreach (var field in ReferralRewardFields)
+			{
+				string direction = "asc";
+				string className = "";
+				string sortIcon = "desc";
+
+				if (field == ViewBag.Sort)
+				{
+					direction = ViewBag.Dir == "desc" ? "asc" : "desc";
+					className = ViewBag.Dir;
+					sortIcon = direction == "asc" ? "fa-sort-up" : "fa-sort-down";
+				}
+
+				<th class="table_headers">
+					<a data-ajax="true"
+					   data-ajax-update="#target"
+					   data-ajax-loading="#loader"
+					   href="?referralRange=@ViewBag.ReferralRange&creditRange=@ViewBag.CreditRange&sort=@field&dir=@direction&page_items=@ViewBag.Page_items&page=@Model.PageNumber"
+					   class="@className">
+						@field <i class='fas @sortIcon'></i>
+					</a>
+				</th>
+			}
+
+			@if (isManager)
+			{
+				<th class="table_headers">Actions</th>
+			}
+		</tr>
+	</thead>
+
+	<tbody>
+		@foreach (var reward in Model)
+		{
+			<tr>
+				<td>@reward.Code</td>
+				<td>@reward.Num_of_referral</td>
+				<td>@reward.Free_credit</td>
+
+
+
+				@{
+					if (isManager)
+					{
+						<td>
+							<!-- Edit Button -->
+							<button class="uk-button uk-button-default uk-button-small pastel-edit-btn" data-get="/ReferralReward/Edit/@reward.Id" uk-tooltip="View / Edit This Details">
+								<span uk-icon="pencil" class="uk-icon"></span> <span class="button-text">@(isManager ? "Edit" : "Detail")</span>
+							</button>
+
+							@if (reward.Status == 1)
+							{
+								<!-- Deactivate Button -->
+								<button class="uk-button uk-button-danger uk-button-small pastel-deactivate-btn equal-width-btn deactivate-btn" data-id="@reward.Id" uk-tooltip="Deactivate This">
+									<span uk-icon="ban" class="uk-icon"></span> <span class="button-text">Deactivate</span>
+								</button>
+							}
+						</td>
+					}
+				}
+
+
+
+			</tr>
+		}
+
+		@if (!Model.Any())
+		{
+			<tr>
+				<td colspan="@(isManager ? 4 : 3)">No referral rewards record available ~</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+<nav class="admin-pager">
+	@{
+		var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+
+		options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+		options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+		options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+		options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+		var ajaxOptions = new AjaxOptions
+			{
+				HttpMethod = "get",
+				UpdateTargetId = "target",
+				LoadingElementId = "#loader",
+			};
+	}
+	@Html.PagedListPager(
+			Model,
+			p => $"?referralRange={ViewBag.ReferralRange}&creditRange={ViewBag.CreditRange}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page_items={ViewBag.Page_items}&page={p}",
+			PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+			)
+</nav>

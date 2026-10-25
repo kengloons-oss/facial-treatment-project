@@ -1,0 +1,299 @@
+﻿@model Assignment.Models.Service
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Service | " + @Model.Code;
+
+    // breadcrumb data
+    ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+    {
+        new KeyValuePair<string, string>("Service", "/Service/ServicesList"),
+        new KeyValuePair<string, string>("Edit", null)
+    };
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="post" class="edit-service-form" id="edit-service-form" enctype="multipart/form-data" action="/Service/ServiceEdit">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="container card" style="padding-bottom: 25px; margin: 0.8rem 0rem 4rem 0rem;">
+        <div class="card-header">
+            <div class="card-title h5">
+                <!-- Back Button -->
+                <button type="button" class="topleft-back" onclick="back()" uk-tooltip="title: Back to Previous Section; pos: top-left;">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button> &nbsp;
+                <!-- Page Title -->
+                Edit Service
+            </div>
+        </div>
+
+        <!-- Step Bar -->
+        <div class="container admin-stepbar">
+            <div class="column col-12">
+                <ul class="step">
+                    <li class="step-item active">
+                        <a class="tooltip create-progress" data-tooltip="Step 1">
+                            Edit Images & Service Details
+                        </a>
+                    </li>
+                    <li class="step-item stepitem2">
+                        <a class="tooltip create-progress" data-tooltip="Step 2">Rearrange Service Sequence</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="columns">
+            <!-- left-side -->
+            <div class="formformat column col-6 col-sm-12" style="padding-bottom: 10px;">
+                <div asp-validation-summary="ModelOnly"></div>
+                <div class="card-body my-pagecard-body">
+
+                    <!-- Upload cover image -->
+                    <div class="columns col-gapless">
+                        <div class="column col-5">
+                            <div class="form-group">
+                                <label for="CoverImageUpload" class="upload">
+                                    <img src="@(!string.IsNullOrEmpty(ViewBag.CoverImagePath) ? ViewBag.CoverImagePath : "/images/package/defaultImage.png")" class="up-cover-img" />
+                                    <div class="upload-inputbox-left">
+                                        <label for="CoverImageUpload" class="file-upload-label">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> Attach cover image by selecting one.
+                                        </label>
+                                        <input type="file" name="cover_image" id="CoverImageUpload" class="form-input" accept="image/jpeg,image/png,image/jpg" />
+                                    </div>
+                                </label>
+                                <span class="text-danger">@ViewBag.CoverImageUploadError</span>
+                            </div>
+                        </div>
+
+                        <div class="column col-7 uploadpart">
+                            <!-- Upload normal images -->
+                            <div class="form-group">
+                                <label for="NormalImageUpload" class="upload-normal">
+                                    <div class="upload-normal-prev">
+                                        <div class="normal-img-container">
+                                            <!-- Default preview images -->
+                                            <div class="slider-container">
+                                                <div class="slider-wrapper" id="image-preview-container">
+                                                    @if(Model.ServicePhotos.Any(x => x.Type == 2)){
+                                                        @* Add previews of the normal images here (if any uploaded previously) *@
+                                                        @foreach (var photo in Model.ServicePhotos.Where(x => x.Type == 2))
+                                                        {
+                                                            <div class="slider-item">
+                                                                <img src="@photo.Path" alt="Service Image" class="slider-image" />
+                                                                <button class="remove-btn"><span>Click to remove this image</span></button>
+                                                            </div>
+                                                        }
+                                                    }else{
+                                                        <div class="slider-item">
+                                                            <img src="/images/package/defaultImage.png" alt="Default Image" class="slider-image">
+                                                            <button class="remove-btn"><span>Click to remove this image</span></button>
+                                                        </div>
+                                                    }
+                                                    
+                                                </div>
+                                                <button type="button" id="prevBtn" class="up-prev-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                                                <button type="button" id="nextBtn" class="up-next-btn" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                                                <div class="image-count">Image(s) Selected:&nbsp;<span id="image-count">0</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="upload-inputbox-right">
+                                        <label for="NormalImageUpload" class="file-upload-label">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> Attach normal images by selecting multiple.
+                                        </label>
+                                        <input type="file" name="normal_image" id="NormalImageUpload" class="form-input" multiple accept="image/jpeg,image/png,image/jpg" />
+                                    </div>
+                                </label>
+                                <span class="text-danger">@ViewBag.NormalImageUploadError</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- end card-body -->
+            </div><!-- end left-side -->
+            <!-- right-side -->
+            <div class="formformat-right column col-6 col-sm-12" style="padding-bottom: 8px;">
+                <div style="padding-bottom: 0.8rem;">
+                    <!-- Service ID -->
+                    <label>Service ID:</label>
+                    @Helpers.FormatId("SV", ViewBag.New_id)
+                </div>
+
+                @* Service basic input *@
+                <div class="form-group">
+                    <label asp-for="Name">Service Name:</label>
+                    <input asp-for="Name" type="text" class="form-input" data-trim />
+                    <span asp-validation-for="Name" class="form-input-hint error-message"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description">Service Description:</label>
+                    <textarea asp-for="Description" type="text" class="form-input" data-trim></textarea>
+                    <span asp-validation-for="Description" class="form-input-hint error-message"></span>
+                </div>
+                <div class="uk-grid-small" uk-grid style="padding-top: 0.2rem; padding-bottom: 0.8rem;">
+                    <div class="uk-width-1-3">
+                        <div class="form-group">
+                            <label asp-for="Price">Service Price (RM):</label>
+                            <input asp-for="Price" type="number" step="0.01" class="form-input" data-trim />
+                            <span asp-validation-for="Price" class="form-input-hint error-message"></span>
+                        </div>
+                    </div>
+                    <div class="uk-width-1-3">
+                        <div class="form-group">
+                            <label asp-for="Cost"></label>
+                            <input type="number" step="0.01" asp-for="Cost" class="form-input" />
+                            <span asp-validation-for="Cost" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="uk-width-1-3">
+                        <div class="form-group">
+                            <label asp-for="Duration">Service Duration (hours):</label>
+                            <input asp-for="Duration" type="number" step="0.1" class="form-input" />
+                            <span asp-validation-for="Duration" class="form-input-hint error-message"></span>
+                        </div>
+                    </div>
+                    <div class="uk-width-1-3">
+                        <div class="form-group">
+                            <label asp-for="Commission">Service Commission (RM):</label>
+                            <input asp-for="Commission" type="number" step="0.01" class="form-input" />
+                            <span asp-validation-for="Commission" class="form-input-hint error-message"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CategoryId">Category</label>
+                    <select asp-for="CategoryId" class="form-input" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name", Model.CategoryId))">
+                        <option value="">Select a Category</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+
+                <div class="text-right" style="padding-top:16px;">
+                    <button type="reset" class="btn btn-secondary">Reset</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a asp-action="ServiceList" class="btn btn-secondary">Cancel</a>
+                </div>
+            </div><!-- end right-side -->
+
+        </div><!-- end columns -->
+    </div><!-- end container card -->
+</form>
+
+<script>
+    // Handle image preview for normal images
+        document.getElementById('NormalImageUpload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const previewContainer = document.getElementById('image-preview-container');
+            const imageCount = document.getElementById('image-count');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            previewContainer.innerHTML = ''; // Reset previous previews
+            let count = 0;
+            let currentIndex = 0;  // Track the current image index
+
+            // Handle file selection
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    count++;
+                    const imgElement = document.createElement('img');
+                    imgElement.src = e.target.result;
+                    imgElement.alt = `Image ${count}`;
+                    imgElement.classList.add('slider-image');
+                    imgElement.style.objectFit = 'contain';  // Ensure images are scaled correctly within their containers
+
+                    const button = document.createElement('button');
+                    button.classList.add('remove-btn');
+                    button.innerHTML = `<span>Click to remove this image</span>`;
+                    button.onclick = function() {
+                        imgElement.remove();
+                        button.remove();
+                        count--;
+                        imageCount.innerText = count;
+                        updateNavigationButtons();
+                    };
+
+                    const sliderItem = document.createElement('div');
+                    sliderItem.classList.add('slider-item');
+                    sliderItem.appendChild(imgElement);
+                    sliderItem.appendChild(button);
+                    previewContainer.appendChild(sliderItem);
+
+                    imageCount.innerText = count;
+
+                    // Show the first image by default
+                    if (count === 1) {
+                        previewContainer.children[0].style.display = '';
+                    }
+
+                    updateNavigationButtons();  // Update button states
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Navigation button actions
+            prevBtn.addEventListener('click', function() {
+                if (currentIndex > 0) {
+                    previewContainer.children[currentIndex].style.display = 'none';
+                    currentIndex--;
+                    previewContainer.children[currentIndex].style.display = '';
+                }
+                updateNavigationButtons();
+            });
+
+            nextBtn.addEventListener('click', function() {
+                if (currentIndex < count - 1) {
+                    previewContainer.children[currentIndex].style.display = 'none';
+                    currentIndex++;
+                    previewContainer.children[currentIndex].style.display = '';
+                }
+                updateNavigationButtons();
+            });
+
+            // Update the navigation buttons based on the current index
+            function updateNavigationButtons() {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex === count - 1;
+            }
+        });
+
+    // Form Submission via AJAX
+        $('.edit-service-form').submit(function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: '/Service/ServiceEdit',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Service Updated Successfully!',
+                        text: response.message || 'The service has been updated successfully.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = '/Service/ServicesList';
+                    });
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error Occurred!',
+                        text: xhr.responseJSON?.message || 'There was an error updating the service. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        });
+</script>

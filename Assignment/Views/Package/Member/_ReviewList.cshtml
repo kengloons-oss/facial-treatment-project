@@ -1,0 +1,120 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model PackageReviewVM
+
+@{
+    // var reviewCount = Model.OrderPackages?
+    //                             .SelectMany(op => op.OrderPackageTreatments ?? Enumerable.Empty<OrderPackageTreatment>())
+    //                             .SelectMany(opt => opt.Appointment?.AppointmentReviews ?? Enumerable.Empty<AppointmentReview>())
+    //                             .Count() ?? 0;
+    var reviews = Model.Reviews;
+    var reviewCount = reviews.Count();
+}
+
+<div id="review_content">
+    <div id="target">
+        @if (reviews != null)
+        {
+            foreach (var review in reviews)
+            {
+                var review_photos = review.ReviewPhotos;
+
+                <div class="review_card">
+                    <!-- Username -->
+                    <div class="username">
+                        @if (review.Anonymous == true) {
+                            var username = review.Appointment.Member.Person.Name;
+
+                            if (string.IsNullOrEmpty(username) || username.Length <= 2)
+                            {
+                                <p>@username</p>
+                            }
+
+                            char firstChar = username[0];
+                            char lastChar = username[^1];
+
+                            string middlePart = new string('*', username.Length - 2);
+                            string maskedName = firstChar + middlePart + lastChar;
+
+                            <p>@maskedName</p>
+                        } else {
+                            <p>@review.Appointment.Member.Person.Name</p>
+                        }
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="ratings" data-selected="@review.Star">
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            if (i < review.Star)
+                            {
+                                <i class="fas fa-star" style="color: gold;"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star" style="color: gold;"></i>
+                            }
+                        }
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="comment">
+                        <p>@review.Comment</p>
+                    </div>
+
+                    <!-- Attachment -->
+                    <div class="comment_attachment">
+                        <div class="previewContainer">
+                            @if (review_photos != null && review_photos.Any())
+                            {
+                                foreach (var img in review_photos)
+                                {
+                                    <div class="preview">
+                                        <img src="/images/review/@img.Path" alt="Review Image" />
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <span class="err" field="attachment"></span>
+                    </div>
+                    <p>@review.Comment_date</p>
+                </div>
+            }
+        }
+
+        @if (reviewCount == 0)
+        {
+            <div class="empty">
+                <div class="empty-icon">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <p class="empty-title h5">No Reviews Yet</p>
+                <p class="empty-subtitle">Browse other product / Change your review filter</p>
+            </div>
+        }
+    </div>
+
+</div>
+
+<nav class="admin-pager">
+    @{
+        var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+        options.LinkToFirstPageFormat = "<i class='fas fa-backward-fast'></i>";
+        options.LinkToLastPageFormat = "<i class='fas fa-forward-fast'></i>";
+        options.LinkToPreviousPageFormat = "<i class='fas fa-chevron-left'></i>";
+        options.LinkToNextPageFormat = "<i class='fas fa-chevron-right'></i>";
+
+        var ajaxOptions = new AjaxOptions
+            {
+                HttpMethod = "get",
+                UpdateTargetId = "target",
+                LoadingElementId = "#loader",
+            };
+    }
+
+    @Html.PagedListPager(
+        Model.Reviews,
+        p => $"?id={ViewBag.Id}&showAll={ViewBag.ShowAll}&withImages={ViewBag.WithImages}&star={ViewBag.Star}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={p}",
+        PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+    )
+</nav>

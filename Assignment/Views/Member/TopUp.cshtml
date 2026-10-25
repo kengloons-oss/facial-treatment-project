@@ -1,0 +1,80 @@
+﻿@model Member
+
+<h2>Meow Wallet</h2>
+<div class="wallet-balance">
+    <p>Current Balance: <strong>@Model.Credit.ToString("C")</strong></p>
+</div>
+
+<!-- Top-Up Form -->
+<form method="post" action="/Member/TopUp">
+    <div class="container">
+        <div class="columns">
+            <!-- left-side -->
+            <div class="column col-6 col-sm-12 card" style="padding-bottom: 25px; margin: 0.8rem 0rem 4rem 0rem;">
+                <div class="card-header">
+                    <div class="card-title h5">
+                        <h3 style="margin:0px;">Top Up Meow Wallet</h3>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Top Up Amount -->
+                    <div class="form-group">
+                        <label for="topUpAmount" class="form-label">Top-Up Amount: </label>
+                        <input type="number" id="topUpAmount" name="topUpAmount" class="form-input topUpAmount" required />
+
+                        <span class="form-input-hint error-message"></span>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="form-group">
+                        <label for="paymentMethod" class="form-label">Payment Method: </label>
+                        <select id="paymentMethod" name="paymentMethod" class="form-input" required>
+                            <option value="1">Cash</option>
+                            <option value="2">Stripe</option>
+                        </select>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="text-right" style="padding-top:16px;">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button id="submitButton" type="submit" class="btn btn-primary">Top Up</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<!-- Success Alert -->
+@if (TempData["Success"] != null)
+{
+    <script>
+        Swal.fire({
+            title: 'Success!',
+            text: "@TempData["Success"]",
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/Member/Wallet"; // Redirect after success
+            }
+        });
+    </script>
+}
+
+<!-- Error Alert -->
+@if (TempData["Alert_Error"] != null)
+{
+    <script>
+        Swal.fire({
+            title: "@TempData["Error_Title"]",
+            text: "@TempData["Alert_Error"]",
+            icon: 'error',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if ("@TempData["Error_Title"]" === "Top Up Failed" && result.isConfirmed) {
+                window.location.href = "/Member/Wallet";
+            }
+        });
+    </script>
+}

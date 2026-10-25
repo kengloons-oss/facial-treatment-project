@@ -1,0 +1,389 @@
+﻿
+
+
+
+/* Step Bar - Admin Create Package */
+.admin-stepbar {
+    margin-bottom: 15px;
+}
+.admin-stepbar .step-item a {
+    border: none;
+    margin-left: -127px;
+    background-color:transparent;
+}
+
+
+
+/* upload normal images preview */
+.upload img.up-cover-img {
+    min-width: 14rem;
+    min-height: 14rem;
+    pointer-events:none;
+}
+.up-normal-img {
+    min-width: 12rem;
+    min-height: 12rem;
+    pointer-events: none;
+}
+/* Slider container and wrapper */
+
+.slider-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+.slider-wrapper {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+.slider-item {
+    width: 100%;
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+/* Image size adjustment */
+.slider-image {
+    width: 12rem;
+    height: 12rem;
+    object-fit: cover; /* Ensures the image maintains aspect ratio while filling the area */
+    pointer-events: none; /* Prevents interaction with the image */
+}
+/* Remove button (hidden by default, shown on hover) */
+.remove-btn {
+    position: absolute;
+    padding: 6rem;
+    background-color: rgba(122, 0, 0, 0.4);
+    font-size: 20px;
+    cursor: pointer;
+    margin: 10rem;
+    opacity: 0;
+}
+.slider-item:hover .remove-btn{
+    opacity: 1;
+}
+.remove-btn span {
+    position: absolute;
+    margin-top: 10%;
+    font-size: .9rem;
+    left: 6%;
+    text-align: center;
+    color: white;
+    opacity: 0.8;
+}
+.remove-btn .imgPreview {
+    position: absolute;
+    margin-top: 10%;
+    left: 22%;
+    text-align: center;
+    color: white;
+    opacity: 0.8;
+}
+
+/* Navigation buttons */
+.up-prev-btn, .up-next-btn {
+    position: absolute;
+    top: 45%;
+    background-color: #888;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    z-index: 22;
+}
+.up-prev-btn {
+    left: 50px;
+    transform: translateY(-50%);
+}
+.up-next-btn {
+    right: 50px;
+    transform: translateY(-50%);
+}
+.image-count {
+    margin-top: 13px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
+
+
+
+
+/* Style adjustments for sortable placeholder */
+.sortable-placeholder {
+    height: 50px;
+    background: rgba(0, 123, 255, 0.2);
+    border: 1px dashed #007bff;
+    margin-bottom: 5px;
+}
+
+/* Ensure treatment labels and service selects are not draggable */
+.treatment {
+    pointer-events: auto; /* Allow treatment container to be interacted with */
+    max-width: 30% !important;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+}
+.service-select-container .input-group {
+    display: flex;
+    font-size:0.6rem;
+}
+
+.service-select-container {
+    pointer-events: auto; /* Allow service select dropdown to be interacted with */
+}
+
+/* Treatment container styling */
+.treatment-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+}
+.service:hover {
+    background-color: #d6cdff;
+}
+.service .remove-service {
+    background-color: transparent;
+    font-size: .68rem;
+    color: #666;
+    padding: 0;
+}
+.service .remove-service:hover{
+    color:indianred;
+}
+.treatmenttitlenum {
+    color: #666;
+}
+.service-container {
+    padding: 20px 10px 10px 6px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: .6rem;
+}
+
+.service {
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+/* override select2 multilist */
+.selection ul {
+    margin: 0;
+}
+.select2-selection__clear {
+    display: none;
+}
+
+
+
+
+
+/* General Dashboard Styling */
+.uk-container {
+    padding: 0;
+}
+.mydashboard-dashboard {
+    display: flex;
+    width: 101.4%;
+    padding: 0;
+    margin-left: 0px;
+    max-height: 75vh;
+}
+
+/* Cards Section */
+.uk-grid-column-small.mydashboard-cards {
+    margin-left: 2px;
+    display: flex;
+    flex-wrap: wrap; 
+    gap: .4rem; 
+    justify-content: space-between; 
+}
+.mydashboard-card {
+    flex: 1 1 calc(33.33% - .4rem); 
+    max-width: calc(33.33% - .4rem); 
+    box-sizing: border-box; 
+    padding: 1rem;
+    background: #fff; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+.mydashboard-cards .mydashboard-card {
+    height: 150px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.mydashboard-card {
+    background-color: #fffde2;
+    border-radius: 10px;
+}
+.mydashboard-card:hover {
+    background-color: #ffecb5;
+    border-radius: 10px;
+}
+/* Tabs Section */
+.mydashboard-tabs {
+    margin-top: 0px;
+}
+.mydashboard-tab-container {
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+.mydashboard-tabs .form-horizontal{
+    margin-top:-18px;
+ 
+}
+.mydashboard-tabs .form-horizontal {
+    padding-right: 14px;
+    font-size: 0.6rem;
+}
+.mydashboard-tabs .form-horizontal select{
+    font-size: 0.6rem;
+}
+.mydashboard-tabs .form-horizontal .form-input{
+    font-size: 0.6rem;
+}
+.mydashboard-tabs .form-horizontal label {
+    padding: 0px;
+}
+img.dashboardicon{
+    height:60px;
+    width:60px;
+}
+.cardword{
+
+}
+.dboard-graphshow {
+    display: flex;
+    flex-direction: column;
+    height: 44vh;
+    align-items: center;
+    justify-content: space-around !important;
+}
+.chartwidthfilled {
+    justify-content: space-around;
+    flex-grow: 1;
+}
+#package-summary-chart {
+    height: 300px !important;
+    width: 300px !important;
+}
+/* Scrollable Section */
+.mydashboard-scrollable {
+    width: 30%; 
+    height: 98%; 
+    margin-left: 0.6rem;
+    padding: 32px;
+    background-color: #b5cfff73;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.voucher-scroll {
+    max-height: 95%; 
+    overflow-y: auto; /* Enables vertical scrolling */
+    padding: 0;
+    box-sizing: border-box; 
+}
+    .voucher-scroll::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge */
+    }
+/* Voucher title */
+.voucher-title-card {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+/* Voucher card styling */
+.voucher-card {
+    position: relative;
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #7495c7; /* border for highlight */
+}
+/* Voucher detail link (ellipsis icon) */
+.voucher-detail-link {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+    color: #999;
+    text-decoration: none;
+}
+    .voucher-detail-link:hover {
+        color: #333;
+    }
+/* Voucher content */
+.voucher-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+.voucher-card span {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+.wrap {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+}
+/* Ellipsis icon styling */
+.detail-smallmenu {
+    position: relative;
+}
+.detail-dot {
+    margin: 0.2rem;
+    font-size: 18px;
+    color: #7a7a7a;
+    text-decoration: none;
+    cursor: pointer;
+}
+    .detail-dot:hover {
+        color: #270fff;
+    }
+.voucher-dot {
+    top: 30%;
+    left: -180%;
+    transform: translateX(-50%);
+}
+.dot-dropdown {
+    display: none;
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(147, 182, 221, 0.521);
+    padding: 10px;
+    border-radius: 8px;
+    list-style-type: none;
+    z-index: 500;
+}
+    .dot-dropdown li {
+        padding: 5px 10px;
+        width: 10rem;
+    }
+        .dot-dropdown li:hover {
+            background-color: #f2f2f2;
+        }
+    .dot-dropdown li a {
+        text-decoration: none;
+        color: #333;
+    }
+        .dot-dropdown li a:hover {
+            color: #007bff;
+        }
+
+

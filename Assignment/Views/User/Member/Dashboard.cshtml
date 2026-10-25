@@ -1,0 +1,295 @@
+﻿@model IEnumerable<Appointment>
+
+@{
+	ViewBag.Title = "Dashboard";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Dashboard", "/User/Member/Dashboard")
+	};
+
+	var member = (Member)ViewBag.Member;
+
+	int currentYear = DateTime.Now.Year;
+	int currentMonth = DateTime.Now.Month;
+}
+
+<div class=" mydashboard-dashboard">
+	<div class="uk-width-expand uk-grid">
+		<!-- Left Section: Cards and Tabs -->
+		<div class="uk-width-expand">
+			<!-- Cards -->
+			<div class="uk-grid-column-small uk-child-width-1-3@s  mydashboard-cards" uk-grid>
+				<!-- Card 1 -->
+				<div class="mydashboard-card dbcard1">
+					<!-- Meow Wallet Balance -->
+					<div class="container">
+						<div class="columns col-gapless">
+							<div class="column col-12 text-left"><h5>Meow Wallet Balance :</h5></div>
+						</div>
+						<div class="columns col-gapless">
+							<div class="column col-4">
+								<img src="/images/dashboard/wallet.png" class="dashboardicon">
+							</div>
+							<div class="column col-8 cardword text-left">
+								<h3>RM @Helpers.FormatMoneyStr((double?)member.Credit ?? 0.00)</h3>
+							</div>
+						</div>
+					</div>
+				</div> <!-- end Card 1 -->
+				<!-- Card 2 -->
+				<div class="mydashboard-card dbcard2">
+					<!-- Estimated Salary Cost -->
+					<div class="container">
+						<div class="columns col-gapless">
+							<div class="column col-12 text-left"><h5>Num of Referral (Pax) :</h5></div>
+						</div>
+						<div class="columns col-gapless">
+							<div class="column col-4">
+								<img src="/images/dashboard/usersadd.png" class="dashboardicon">
+							</div>
+							<div class="column col-8 cardword text-left">
+								<h3>@member.Referral_purchase</h3>
+							</div>
+						</div>
+					</div>
+				</div><!-- end Card 2 -->
+				<!-- Card 3 -->
+				<div class="mydashboard-card">
+					<!-- Package Sold -->
+					<div class="container">
+						<div class="columns col-gapless">
+							<div class="column col-12 text-left"><h5>Package Available :</h5></div>
+						</div>
+						<div class="columns col-gapless">
+							<div class="column col-4 text-center">
+								<img src="/images/dashboard/package.png" class="dashboardicon">
+							</div>
+							<div class="column col-4 cardword text-center">
+								<h1>
+									@ViewBag.AvailablePackages
+								</h1>
+							</div>
+						</div>
+					</div>
+				</div><!-- end Card 3 -->
+			</div> <!-- end Card -->
+			<!-- Tabs -->
+			<div class="uk-width-expand mydashboard-tabs">
+				<!-- Tabs Name -->
+				<ul class="uk-tab mydashboard-tab-container" uk-tab>
+					<!-- Tab 1 -->
+					<li><a href="#tab1" style="text-decoration:none;">Appointment Status Summary</a></li>
+				</ul>
+
+				<!-- Tabs Content Container -->
+				<!-- (specific tab layout need：form-horizontal,columns,column col-4,form-label,form-input) -->
+				<ul class="uk-switcher uk-margin">
+					<!-- Tab 1 Content -->
+					<li id="tab1">
+						<!-- Appointment Status Summary Chart -->
+						<div class="appointment-selector-container">
+							<form data-ajax="true"
+								  data-ajax-update="#appointment-summary-target"
+								  data-ajax-loading="#loader"
+								  id="appointment-summary-chart-form"
+								  class="form-horizontal">
+
+								<div class="columns">
+									<!-- Year Selection Dropdown -->
+									<div class="column col-4 view-year-select">
+										<label for="appointment-select-year" class="form-label">Year:</label>
+										<select id="year-selection" name="year" class="form-select select2">
+											@for (int year = currentYear - 9; year <= currentYear + 1; year++)
+											{
+												if (year == currentYear)
+												{
+													<option value="@year" selected>@year</option>
+												}
+												else
+												{
+													<option value="@year">@year</option>
+												}
+											}
+										</select>
+									</div>
+
+									<!-- Month Selection Dropdown -->
+									<div class="column col-4 view-month-select">
+										<label for="appointment-select-month" class="form-label">Month:</label>
+										<select id="month-selection" name="month" class="form-select select2">
+											<option value="">All</option>
+											@for (int month = 1; month <= 12; month++)
+											{
+												if (month == currentMonth)
+												{
+													<option value="@month" selected>
+														@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month)
+													</option>
+												}
+												else
+												{
+													<option value="@month">
+														@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month)
+													</option>
+												}
+											}
+										</select>
+									</div>
+
+									<!-- Week Selection Dropdown -->
+									<div class="column col-4">
+										<label for="appointment-select-week" class="form-label">Week:</label>
+										<select id="week-selection" name="week" class="form-select select2">
+											<option value="">All</option>
+											@for (int i = 1; i <= 5; i++)
+											{
+												<option value="@i">Week @i</option>
+											}
+										</select>
+									</div>
+								</div>
+							</form>
+
+							<div id="appointment-summary-target" class="dboard-graphshow">
+								<partial name="Member/_AppointmentStatusSummaryChart" />
+							</div>
+
+						</div>
+					</li><!-- end Tab 1 -->
+				</ul>
+			</div>
+		</div><!-- end Left Section: Cards and Tabs -->
+		<!-- Right Scrollable Section -->
+		<div class=" mydashboard-scrollable">
+			<div class="wrap">
+				<div class="voucher-title-card">Pending Appointment List (@Model.Count())</div>
+				<div class="detail-smallmenu">
+					<a href="#" class="detail-dot">
+						<i class="fa-solid fa-ellipsis"></i>
+					</a>
+					<ul class="dot-dropdown voucher-dot">
+						<li style="margin-top:2px;"><a href="/Appointment/Calendar">Go to View</a></li>
+						<li><a href="/Appointment/Create">Book Appointment</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="voucher-scroll">
+				@foreach (var appointment in Model)
+				{
+					var timeUntilAppointment = appointment.Start_datetime - DateTime.Now;
+
+					<div class="voucher-card">
+						<h3>@appointment.Title</h3>
+						<span>Type: @Helpers.GetAppointmentType(appointment.Type)</span>
+
+						@if (appointment.Staff != null)
+						{
+							<span>Person In Charge: @appointment.Staff.Person.Name</span>
+						}
+
+						@if (appointment.Member != null)
+						{
+							<span>Customer: @appointment.Member.Person.Name</span>
+						}
+						<span>Time left: @($"{timeUntilAppointment.Days} days, {timeUntilAppointment.Hours} hours, {timeUntilAppointment.Minutes} minutes")</span>
+					</div>
+				}
+			</div>
+		</div><!-- end of Right Scrollable Section -->
+	</div>
+</div>
+
+<script>
+	$(document).ready(function () {
+		// Toggle the dropdown menu on click
+		$('.detail-dot').on('click', function(e) {
+			e.preventDefault(); // Prevent default anchor behavior
+			$(this).next('.dot-dropdown').toggle(); // Toggle the dropdown
+		});
+
+		// Hide the dropdown if clicked outside
+		$(document).on('click', function(e) {
+			if (!$(e.target).closest('.detail-dot, .dot-dropdown').length) {
+				$('.dot-dropdown').hide(); // Hide all dropdowns
+			}
+		});
+
+		$('#year-selection, #month-selection, #week-selection').on('change', function (e) {
+			var selectedWeek = $("#week-selection").val();
+			var selectedMonth = $("#month-selection").val();
+			var selectedYear = $("#year-selection").val();
+
+			// If the month is not selected, reset week list to "All"
+			if (selectedMonth === "") {
+				$("#week-selection").empty(); // Clear the existing options
+				$("#week-selection").append("<option value='' selected>All</option>"); // Add only the "All" option
+			} else {
+				// Populate the week list for the selected month
+				updateWeekSelection(selectedYear, selectedMonth);
+			}
+
+			// Submit the form
+			$(e.target.form).submit();
+		});
+
+		function updateWeekSelection() {
+			// Store the currently selected week
+			var previousWeek = $("#week-selection").val();
+
+			// Get selected month and year
+			var selectedMonth = $("#month-selection").val();
+			var selectedYear = $("#year-selection").val();
+
+			// Clear existing week options
+			$("#week-selection").empty();
+
+			// If no month is selected, only add "All" option
+			if (!selectedMonth) {
+				$("#week-selection").append("<option value=''>All</option>");
+				$("#week-selection").val(""); // Default to "All"
+				return;
+			}
+
+			// Get the first and last day of the selected month
+			var firstDayOfMonth = new Date(selectedYear, selectedMonth - 1, 1); // Month is 0-based
+			var lastDayOfMonth = new Date(selectedYear, selectedMonth, 0); // Last day of the selected month
+
+			// Calculate the number of weeks in the month
+			var weeks = getWeeksInMonth(firstDayOfMonth, lastDayOfMonth);
+
+			// Add "All" option
+			$("#week-selection").append("<option value=''>All</option>");
+
+			// Add week options
+			for (var week = 1; week <= weeks; week++) {
+				$("#week-selection").append("<option value='" + week + "'>Week " + week + "</option>");
+			}
+
+			// Restore the previous selection if it exists in the new options
+			if ($("#week-selection option[value='" + previousWeek + "']").length > 0) {
+				$("#week-selection").val(previousWeek);
+			} else {
+				$("#week-selection").val(""); // Default to "All" if the previous week is no longer valid
+			}
+		}
+
+	function getWeeksInMonth(startDate, endDate) {
+		// Start by setting the first week of the month to the first Sunday before the start date
+		var startOfWeek = new Date(startDate);
+		startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+		// Calculate the number of weeks
+		var weeks = 0;
+		while (startOfWeek <= endDate) {
+			weeks++;
+			startOfWeek.setDate(startOfWeek.getDate() + 7); // Move to the next week
+		}
+
+		return weeks;
+	}
+
+	});
+</script>

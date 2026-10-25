@@ -1,0 +1,205 @@
+﻿@inject DB db
+@model Order
+
+@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Order | " + Model.Code;
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Order", "/Order/Staff/List"),
+		new KeyValuePair<string, string>("Detail", null)
+	};
+
+	int index = 1;
+}
+
+@section head {
+	<script src="/js/general/packageDetailModal.js"></script>
+}
+
+<div class="container card my-pagecard" style="padding-left:22px;">
+	<!-- container card (got border line) -->
+	<div class="columns">
+
+		<!-- left-side -->
+		<div class="formformat column col-8 col-sm-12">
+
+			<div class="card-header">
+				<div class="card-title h5">
+					<!-- Back Button -->
+					<button class="topleft-back" type="button" data-get="/Order/Staff/List" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+					<!-- Page Title -->
+					Order @Model.Code
+				</div>
+			</div>
+
+			<div class="card-body my-pagecard-body">
+				<div id="cart-item-list">
+					<!-- cart-item-list -->
+					@foreach (var item in Model.OrderPackages)
+					{
+						<div class="cart-item">
+							<div class="cart-con-1">
+								<!-- cart-con-1 -->
+								<div class="cart-select-section">
+									@index.
+								</div>
+								<div class="cart-img">
+									@{
+										string? path = item.Package.PackagePhotos.Where(pp => pp.Type == 1).Select(pp => pp.Path).FirstOrDefault();
+									}
+									@if (!string.IsNullOrEmpty(path))
+									{
+										<img src="/images/package/cover/@path" />
+									}
+									else
+									{
+										<img src="/images/package/defaultImage.png" />
+									}
+								</div>
+							</div><!-- end cart-con-1 -->
+
+							<div class="cart-con-2">
+								<!-- cart-con-2 -->
+								<div class="cart-con-row1">
+									<div class="cart-itemname">
+										<span class="label_id">@item.Package.Code</span> -
+										<span class="label_name">@item.Package.Name</span> -
+										<span class="label_price">RM @item.Package.Price.ToString("N2")</span>
+									</div>
+
+									<div class="cart-action">
+										<button class="remove b_remove remove-cart-item detail-btn" data-id="@item.Package.Id">View Detail</button>
+									</div>
+								</div>
+
+								<div class="cart-con-row2">
+									<span class="label-text cart-item-detail">Total Treatment: @item.Package.Treatment</span>
+								</div>
+							</div><!-- end cart-con-2 -->
+						</div>
+
+						index++;
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- right-side -->
+		<div class="formformat-right column col-4 col-sm-12 ">
+			<div class="container grid-lg responsive-text1 calculatepreview" style="margin-top:30px;">
+				<div class="columns">
+					<button id="view-pdf-btn" class="btn btn-success">View Order PDF</button>
+
+					<!-- Order Detail -->
+					<div class="column col-12">
+						<br />
+						<!-- Subtotal without Discount -->
+						<!-- Order Id -->
+						<div class="form-group">
+							<label for="OrderId" class="form-label">Order Id:</label>
+							<div class="fake-input">@Model.Code</div>
+						</div>
+
+						<!-- Created on -->
+						<div class="form-group">
+							<label for="CreatedDate" class="form-label">Created on:</label>
+							<div class="fake-input">@Model.Payment_method</div>
+						</div>
+
+						<!-- Customer Name -->
+						<div class="form-group">
+							<label for="Name" class="form-label">Customer Name:</label>
+							<div class="fake-input">@Model.Member.Person.Name</div>
+						</div>
+
+						<!-- Email -->
+						<div class="form-group">
+							<label for="Name" class="form-label">Email:</label>
+							<div class="fake-input">@Model.Member.Person.Email</div>
+						</div>
+						<br />
+						<div class="divider"></div>
+					</div>
+
+					<!-- Order Summary -->
+					<div class="column col-12">
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Subtotal Amount:
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="subtotalWithoutDiscount">@Model.Subtotal</span>
+							</div>
+						</div>
+
+						<!-- Total Tax -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Tax Charge (8%) :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="totalTax">@Model.Tax</span>
+							</div>
+						</div>
+
+						<!-- Member Discount Amount -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Member Discount Amount :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="totalAmount">@Model.Discount</span>
+							</div>
+						</div>
+
+						<!-- Final Total -->
+						<div class="columns" style="margin-top:0.3rem">
+							<div class="column col-7 text-left">
+								Total Amount :
+							</div>
+							<div class="column col-5 text-right">
+								RM<span id="grandTotal">@Model.Amount</span>
+							</div>
+						</div>
+						<br />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal for selecting deactivated services -->
+<div id="package-modal" class="modal">
+	<a class="modal-overlay" aria-label="Close"></a>
+
+	<div class="modal-container">
+		<div class="modal-header">
+			<a class="btn btn-clear float-right" aria-label="Close" id="close-package-modal"></a>
+			<h5 class="modal-title">Package Details Of</h5>
+			<span id="package-name">xxxxx</span>
+		</div>
+		<div class="modal-body">
+			<div class="content my-adjustedmodal">
+				@* <p>Here are more details about the package...</p> *@
+				<ul id="package-content"></ul>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary btn-close" id="close-package-modal-btn">Close</button>
+		</div>
+	</div>
+</div>
+
+@section foot {
+	<script>
+		// view order pdf
+		$('#view-pdf-btn').on('click', function() {
+			var url = "/Order/Invoice/@Model.Id";
+			window.open(url, '_blank');
+		});
+	</script>
+}

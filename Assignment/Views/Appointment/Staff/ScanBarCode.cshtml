@@ -1,0 +1,130 @@
+﻿@{
+	Layout = "_StaffLayout";
+	ViewBag.Title = "Appointment | Scan BarCode";
+
+	// breadcrumb data
+	ViewBag.Breadcrumbs = new List<KeyValuePair<string, string>>()
+	{
+		new KeyValuePair<string, string>("Appointment", "/Appointment/FullCalendar"),
+		new KeyValuePair<string, string>("Scan BarCode", null)
+	};
+
+}
+
+<div class="container">
+	<div class="columns">
+		<!-- left-side -->
+		<div class="formformat column col-6 col-sm-12 card my-single-card">
+			<div class="card-header">
+				<div class="card-title h5">
+					<!-- Back Button -->
+					<button class="topleft-back" type="button" type="button" data-get="/Appointment/FullCalendar" uk-tooltip="title: Back to Previous Section; pos: top-left;"><i class="fa-solid fa-arrow-left"></i></button> &nbsp;
+					<!-- Page Title -->
+					Scan BarCode
+				</div>
+			</div>
+
+			<div class="card-body my-pagecard-body">
+				<div id="scanner-container" style="width: 100%; height: 500px;"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
+<script>
+	// Function to initialize Quagga
+	function initializeQuagga() {
+		Quagga.init(
+			{
+				inputStream: {
+					name: "Live",
+					type: "LiveStream",
+					target: document.querySelector("#scanner-container"), // Attach the video feed to this element
+					constraints: {
+						facingMode: "environment", // Use the rear camera (environment-facing)
+					},
+				},
+				decoder: {
+					readers: ["code_128_reader"], // Specify the barcode format to decode
+				},
+			},
+			(err) => {
+				if (err) {
+					console.error("Quagga initialization error:", err);
+					return;
+				}
+				Quagga.start(); // Start the scanner after initialization
+			}
+		);
+	}
+
+	// Function to restart Quagga safely
+	function restartQuagga() {
+		window.location.href = "";
+	}
+
+	// Initialize Quagga on page load
+	initializeQuagga();
+
+	// Handle detected barcode
+	Quagga.onDetected((data) => {
+		const barcodeValue = data.codeResult.code;
+		const id = @Model;
+
+		Quagga.stop(); // Stop scanning temporarily to process the barcode
+
+		// Show loading spinner
+		loadingAlert();
+		
+		// Use AJAX to send the barcode value to the server
+		$.ajax({
+			url: '/Appointment/ScanBarCode', // Your API endpoint
+			type: 'POST',
+			data: {
+				BarcodeValue: barcodeValue,
+				id: id 
+			},
+			success: function(response) {
+				if (response.success) {
+					Swal.close();
+					Swal.fire({
+						title: "Scan Success",
+						text: response.message,
+						icon: 'success', // You can use 'success', 'error', 'warning', 'info', or 'question'
+						showDenyButton: false,
+						showCancelButton: false,
+						confirmButtonText: "OK"
+					}).then(() => {
+						window.location.href = "/Appointment/FullCalendar";
+					});
+				} else {
+					Swal.close();
+					Swal.fire({
+						title: "Scan Failed",
+						text: response.message,
+						icon: 'error', // You can use 'success', 'error', 'warning', 'info', or 'question'
+						showDenyButton: false,
+						showCancelButton: false,
+						confirmButtonText: "OK"
+					}).then(() => {
+						// Restart the scanner after processing the barcode
+						restartQuagga();
+					});
+				}
+			},
+			error: function(xhr, status, error) {
+				// Handle error response
+				console.error("Error sending barcode to server:", error);
+				alert('Error sending barcode to server.');
+
+				Swal.close();
+				// Restart the scanner if there was an error with the request
+				restartQuagga();
+			}
+		});
+	});
+</script>
+

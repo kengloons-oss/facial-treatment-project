@@ -1,0 +1,162 @@
+﻿@{
+	Context.Response.Headers["Cache-Control"] = "no-store";
+	Context.Response.Headers["Pragma"] = "no-cache";
+	Context.Response.Headers["Expires"] = "0";
+
+	Context.Request.Cookies.TryGetValue("redirect", out var redirect);
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>@ViewBag.Title</title>
+	<link rel="shortcut icon" href="/images/favicon.png">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+	<!-- Font Awesome for icon-->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+	<!-- ----- -->
+	<!-- alert -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
+	<!-- jquery -->
+	<script src="/js/jquery.min.js"></script>
+	<!-- toast ui calendar -->
+	<link rel="stylesheet" href="/css/tui/toastui-calendar.min.css" />
+	<script src="/js/tui/toastui-calendar.min.js"></script>
+	<!-- UIKit -->
+	<link rel="stylesheet" href="/css/uikit/uikit.css" />
+	<script src="/js/uikit/uikit.min.js"></script>
+	<script src="/js/uikit/uikit-icons.min.js"></script>
+	<!-- Spectre.css -->
+	<link rel="stylesheet" href="/css/spectre/spectre.css">
+	<link rel="stylesheet" href="/css/spectre/spectre-exp.css">
+	<link rel="stylesheet" href="/css/spectre/spectre-icons.css">
+	<!-- chart -->
+	<script src="/js/chart/chart.umd.min.js"></script>
+
+	<!-- Flatpickr CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<!-- Flatpickr JS -->
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+	<!-- OTHERS -->
+	<link rel="stylesheet" href="/css/base.css">
+
+	<script src="/js/component/home.js"></script>
+	<script src="/js/general/signlogin.js" asp-append-version="true"></script>
+
+
+	@RenderSection("head", false)
+</head>
+<body>
+	@if (TempData["Alert_Success"] != null)
+	{
+		<script>
+			var success_title = "@TempData["Success_Title"]";
+			var userRole = "@ViewBag._UserRole";
+
+			Swal.fire({
+				title: success_title,
+				text: "@TempData["Alert_Success"]",
+				icon: 'success',
+				showDenyButton: false,
+				showCancelButton: false,
+				confirmButtonText: "OK"
+			}).then((result) => {
+				if(success_title == "Login Success"){
+					if (userRole === "staff") {
+						window.location.href = "/User/Staff/Dashboard"; // Redirect for staff
+					} else if (userRole === "member") {
+						// Check if 'redirect' cookie exists and redirect accordingly
+						if ("@redirect" === null || "@redirect" === "") {
+							window.location.href = "/Package/List"; // Default redirect for members
+						} else {
+							window.location.href = "@redirect"; // Use the 'redirect' cookie value
+						}
+					} else {
+						window.location.href = "/Login/Login";
+					}
+				}
+
+			});;
+		</script>
+
+	}
+	else if (TempData["Alert_Error"] != null)
+	{
+		<script>
+			var error_title = "@TempData["Error_Title"]";
+
+			Swal.fire({
+				title: error_title,
+				text: "@TempData["Alert_Error"]",
+				icon: 'error',   @* You can use 'success', 'error', 'warning', 'info', or 'question' *@
+				showDenyButton: false,
+				showCancelButton: true,
+				confirmButtonText: "OK"
+			}).then((result) => {
+				if(error_title === "Access Denied"){
+					if(result.isConfirmed){
+						window.location.href = "/Login/Login";
+					} else {
+						window.location.href = "/Home/Home";
+					}
+				}
+			});
+		</script>
+	}
+
+	<main>
+		@RenderBody()
+	</main>
+
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+	<script src="/js/jquery.validate.min.js"></script>
+	<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+	<script src="/js/app.js" asp-append-version="true"></script>
+
+	<!-- Crop and Rotate Photo -->
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+	<!-- For selection field that can search -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+	@RenderSection("foot", false)
+
+	<!--Start of Tawk.to Script (Live chat) -->
+	<script type="text/javascript">
+		var Tawk_API = Tawk_API || {},
+			Tawk_LoadStart = new Date();
+		(function() {
+			var s1 = document.createElement("script"),
+				s0 = document.getElementsByTagName("script")[0];
+			s1.async = true;
+			s1.src = 'https://embed.tawk.to/66e59bce50c10f7a00a9f8ac/1i7oeh83i';
+			s1.charset = 'UTF-8';
+			s1.setAttribute('crossorigin', '*');
+			s0.parentNode.insertBefore(s1, s0);
+		})();
+	</script>
+	<!--End of Tawk.to Script-->
+
+
+	<script>
+		function redirectToLogin() {
+			window.location.href = '/Login/Logout';
+		}
+	</script>
+
+	<script>
+		function back() {
+			history.back();
+		}
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+﻿@{
+    var errors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+}
+
+@if (errors.Any())
+{
+    <script>
+        alert('@string.Join("\\n", errors)');
+    </script>
+}
