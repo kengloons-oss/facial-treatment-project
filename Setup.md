@@ -77,7 +77,8 @@ Set secrets locally with .NET User Secrets; do not put real keys in `appsettings
 
 ```powershell
 cd .\Assignment
-dotnet user-secrets init
+# This project already has a UserSecretsId. If using a copy that does not, run:
+# dotnet user-secrets init
 dotnet user-secrets set "Stripe:SecretKey" "YOUR_STRIPE_TEST_SECRET_KEY"
 dotnet user-secrets set "Stripe:PublishableKey" "YOUR_STRIPE_TEST_PUBLISHABLE_KEY"
 dotnet user-secrets set "Smtp:User" "YOUR_SMTP_EMAIL"
