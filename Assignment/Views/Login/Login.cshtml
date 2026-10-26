@@ -12,8 +12,6 @@
 		|| configuration.GetValue<bool>("ReCaptchaSettings:Enabled", true);
 
 	string referralId = Helpers.GetStringSessionValue("PendingPersonReferredId") ?? null;
-	Console.Clear();
-	Console.WriteLine($"{referralId}");
 }
 
 @section head {
